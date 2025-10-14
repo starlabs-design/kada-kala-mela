@@ -14,15 +14,7 @@ export const inventoryItems = pgTable("inventory_items", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-export const insertInventoryItemSchema = createInsertSchema(inventoryItems, {
-  name: z.string().min(1),
-  category: z.string().min(1),
-  quantity: z.number().int().min(0),
-  unit: z.string().min(1),
-  purchasePrice: z.number().int().min(0),
-  sellingPrice: z.number().int().min(0),
-  lowStockAlert: z.boolean(),
-}).omit({
+export const insertInventoryItemSchema = createInsertSchema(inventoryItems).omit({
   id: true,
   createdAt: true,
 });
@@ -40,13 +32,7 @@ export const sellers = pgTable("sellers", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-export const insertSellerSchema = createInsertSchema(sellers, {
-  name: z.string().min(1),
-  phone: z.string().min(1),
-  productType: z.string().min(1),
-  address: z.string().optional(),
-  notes: z.string().optional(),
-}).omit({
+export const insertSellerSchema = createInsertSchema(sellers).omit({
   id: true,
   createdAt: true,
 });
@@ -64,15 +50,11 @@ export const transactions = pgTable("transactions", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-export const insertTransactionSchema = createInsertSchema(transactions, {
-  type: z.enum(["income", "expense"]),
-  category: z.string().min(1),
-  amount: z.number().int(),
-  date: z.string().min(1),
-  notes: z.string().optional(),
-}).omit({
+export const insertTransactionSchema = createInsertSchema(transactions).omit({
   id: true,
   createdAt: true,
+}).extend({
+  type: z.enum(["income", "expense"]),
 });
 
 export type InsertTransaction = z.infer<typeof insertTransactionSchema>;
@@ -88,13 +70,7 @@ export const settings = pgTable("settings", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-export const insertSettingsSchema = createInsertSchema(settings, {
-  shopName: z.string().optional(),
-  ownerName: z.string().optional(),
-  shopPhone: z.string().optional(),
-  language: z.string().optional(),
-  darkMode: z.boolean().optional(),
-}).omit({
+export const insertSettingsSchema = createInsertSchema(settings).omit({
   id: true,
   updatedAt: true,
 });
