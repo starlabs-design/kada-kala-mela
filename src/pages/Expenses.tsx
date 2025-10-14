@@ -7,6 +7,7 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -23,6 +24,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -41,6 +43,14 @@ const Expenses = () => {
   const queryClient = useQueryClient();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [transactionToDelete, setTransactionToDelete] = useState<number | null>(null);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [newTransaction, setNewTransaction] = useState({
+    type: "income" as "income" | "expense",
+    category: "",
+    amount: "",
+    date: new Date().toISOString().split('T')[0],
+    notes: ""
+  });
 
   const { data: transactions = [] } = useQuery<Transaction[]>({
     queryKey: ["transactions"],
@@ -60,6 +70,25 @@ const Expenses = () => {
     },
   });
 
+  const createMutation = useMutation({
+    mutationFn: transactionsAPI.create,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["transactions"] });
+      setIsAddDialogOpen(false);
+      setNewTransaction({
+        type: "income",
+        category: "",
+        amount: "",
+        date: new Date().toISOString().split('T')[0],
+        notes: ""
+      });
+      toast.success("Transaction added successfully");
+    },
+    onError: () => {
+      toast.error("Failed to add transaction");
+    },
+  });
+
   const handleDeleteClick = (id: number) => {
     setTransactionToDelete(id);
     setDeleteDialogOpen(true);
@@ -69,6 +98,20 @@ const Expenses = () => {
     if (transactionToDelete !== null) {
       deleteMutation.mutate(transactionToDelete);
     }
+  };
+
+  const handleAddTransaction = () => {
+    if (!newTransaction.category || !newTransaction.amount || !newTransaction.date) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+    createMutation.mutate({
+      type: newTransaction.type,
+      category: newTransaction.category,
+      amount: parseInt(newTransaction.amount),
+      date: newTransaction.date,
+      notes: newTransaction.notes || undefined
+    });
   };
 
   const totalIncome = transactions
@@ -240,24 +283,29 @@ const Expenses = () => {
       </div>
 
       {/* Add Transaction Button */}
-      <Dialog>
-        <DialogTrigger asChild>
-          <Button
-            className="fixed bottom-24 right-6 h-14 w-14 rounded-full shadow-lg"
-            size="icon"
-          >
-            <Plus className="h-6 w-6" />
-          </Button>
-        </DialogTrigger>
+      <Button
+        className="fixed bottom-24 right-6 h-14 w-14 rounded-full shadow-lg"
+        size="icon"
+        onClick={() => setIsAddDialogOpen(true)}
+      >
+        <Plus className="h-6 w-6" />
+      </Button>
+
+      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
         <DialogContent className="rounded-3xl max-w-[90%]">
           <DialogHeader>
             <DialogTitle>Add Transaction</DialogTitle>
             <DialogDescription>Record income or expense</DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
+          <form className="space-y-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="type">Type</Label>
-              <Select>
+              <Select
+                value={newTransaction.type}
+                onValueChange={(value) =>
+                  setNewTransaction({ ...newTransaction, type: value as "income" | "expense" })
+                }
+              >
                 <SelectTrigger className="rounded-xl">
                   <SelectValue placeholder="Select type" />
                 </SelectTrigger>
@@ -269,35 +317,70 @@ const Expenses = () => {
             </div>
             <div className="space-y-2">
               <Label htmlFor="category">Category</Label>
-              <Select>
-                <SelectTrigger className="rounded-xl">
-                  <SelectValue placeholder="Select category" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="tea">Tea & Snacks</SelectItem>
-                  <SelectItem value="groceries">Groceries</SelectItem>
-                  <SelectItem value="purchase">Purchase</SelectItem>
-                  <SelectItem value="rent">Rent</SelectItem>
-                  <SelectItem value="electricity">Electricity</SelectItem>
-                  <SelectItem value="misc">Miscellaneous</SelectItem>
-                </SelectContent>
-              </Select>
+              <Input
+                id="category"
+                value={newTransaction.category}
+                onChange={(e) =>
+                  setNewTransaction({ ...newTransaction, category: e.target.value })
+                }
+                placeholder="Enter category"
+                className="rounded-xl"
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="amount">Amount</Label>
               <Input
                 id="amount"
                 type="number"
+                value={newTransaction.amount}
+                onChange={(e) =>
+                  setNewTransaction({ ...newTransaction, amount: e.target.value })
+                }
                 placeholder="₹0"
                 className="rounded-xl"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="notes">Notes (Optional)</Label>
-              <Input id="notes" placeholder="Add notes..." className="rounded-xl" />
+              <Label htmlFor="date">Date</Label>
+              <Input
+                id="date"
+                type="date"
+                value={newTransaction.date}
+                onChange={(e) =>
+                  setNewTransaction({ ...newTransaction, date: e.target.value })
+                }
+                className="rounded-xl"
+              />
             </div>
-            <Button className="w-full rounded-xl">Add Transaction</Button>
-          </div>
+            <div className="space-y-2">
+              <Label htmlFor="notes">Notes (Optional)</Label>
+              <Textarea
+                id="notes"
+                value={newTransaction.notes}
+                onChange={(e) =>
+                  setNewTransaction({ ...newTransaction, notes: e.target.value })
+                }
+                placeholder="Add notes..."
+                className="rounded-xl"
+              />
+            </div>
+          </form>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsAddDialogOpen(false)}
+              className="rounded-xl"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleAddTransaction}
+              disabled={createMutation.isPending}
+              className="rounded-xl"
+            >
+              {createMutation.isPending ? "Saving..." : "Save"}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
