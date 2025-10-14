@@ -104,7 +104,7 @@ const Inventory = () => {
 
   const [newItem, setNewItem] = useState<InventoryFormData>({
     name: "",
-    category: "",
+    category: "Inventory / Purchases",
     quantity: 0,
     unit: "",
     purchasePrice: 0,
@@ -115,14 +115,14 @@ const Inventory = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    createMutation.mutate(newItem as any);
+    createMutation.mutate({ ...newItem, category: "Inventory / Purchases" } as any);
   };
 
   const handleEditSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (editingItem) {
       const { id, ...data } = editingItem;
-      updateMutation.mutate({ id, data });
+      updateMutation.mutate({ id, data: { ...data, category: data.category || "Inventory / Purchases" } });
     }
   };
 
@@ -265,31 +265,7 @@ const Inventory = () => {
                   required
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="category">Category</Label>
-                <Select value={newItem.category} onValueChange={(value) => setNewItem({ ...newItem, category: value })}>
-                  <SelectTrigger className="rounded-xl">
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Inventory / Purchases">Inventory / Purchases</SelectItem>
-                    <SelectItem value="Rent & Utilities">Rent & Utilities</SelectItem>
-                    <SelectItem value="Packaging & Supplies">Packaging & Supplies</SelectItem>
-                    <SelectItem value="Transportation">Transportation</SelectItem>
-                    <SelectItem value="Maintenance & Cleaning">Maintenance & Cleaning</SelectItem>
-                    <SelectItem value="Wages / Labor">Wages / Labor</SelectItem>
-                    <SelectItem value="Marketing & Advertising">Marketing & Advertising</SelectItem>
-                    <SelectItem value="Licenses & Fees">Licenses & Fees</SelectItem>
-                    <SelectItem value="Equipment & Tools">Equipment & Tools</SelectItem>
-                    <SelectItem value="Miscellaneous / Others">Miscellaneous / Others</SelectItem>
-                    <SelectItem value="Tea & Beverages Sales">Tea & Beverages Sales</SelectItem>
-                    <SelectItem value="Snacks Sales">Snacks Sales</SelectItem>
-                    <SelectItem value="Grocery Sales">Grocery Sales</SelectItem>
-                    <SelectItem value="Special / Seasonal Items">Special / Seasonal Items</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
                   <Label htmlFor="quantity">Quantity</Label>
                   <Input
@@ -314,7 +290,7 @@ const Inventory = () => {
                   />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
                   <Label htmlFor="purchase">Purchase Price</Label>
                   <Input
@@ -388,34 +364,7 @@ const Inventory = () => {
                   required
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="editCategory">Category</Label>
-                <Select 
-                  value={editingItem?.category || ""} 
-                  onValueChange={(value) => setEditingItem(editingItem ? { ...editingItem, category: value } : null)}
-                >
-                  <SelectTrigger className="rounded-xl">
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Inventory / Purchases">Inventory / Purchases</SelectItem>
-                    <SelectItem value="Rent & Utilities">Rent & Utilities</SelectItem>
-                    <SelectItem value="Packaging & Supplies">Packaging & Supplies</SelectItem>
-                    <SelectItem value="Transportation">Transportation</SelectItem>
-                    <SelectItem value="Maintenance & Cleaning">Maintenance & Cleaning</SelectItem>
-                    <SelectItem value="Wages / Labor">Wages / Labor</SelectItem>
-                    <SelectItem value="Marketing & Advertising">Marketing & Advertising</SelectItem>
-                    <SelectItem value="Licenses & Fees">Licenses & Fees</SelectItem>
-                    <SelectItem value="Equipment & Tools">Equipment & Tools</SelectItem>
-                    <SelectItem value="Miscellaneous / Others">Miscellaneous / Others</SelectItem>
-                    <SelectItem value="Tea & Beverages Sales">Tea & Beverages Sales</SelectItem>
-                    <SelectItem value="Snacks Sales">Snacks Sales</SelectItem>
-                    <SelectItem value="Grocery Sales">Grocery Sales</SelectItem>
-                    <SelectItem value="Special / Seasonal Items">Special / Seasonal Items</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
                   <Label htmlFor="editQuantity">Quantity</Label>
                   <Input
@@ -440,7 +389,7 @@ const Inventory = () => {
                   />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
                   <Label htmlFor="editPurchase">Purchase Price</Label>
                   <Input
