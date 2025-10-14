@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/select";
 import { Plus, Search, AlertCircle, Package, Pencil, Trash2 } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
-import { inventoryAPI } from "@/lib/api";
+import { inventoryAPI, sellersAPI } from "@/lib/api";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -42,6 +42,7 @@ interface InventoryFormData {
   unit: string;
   purchasePrice: number;
   sellingPrice: number;
+  sellerId?: number | null;
   lowStockAlert: boolean;
 }
 
@@ -57,6 +58,11 @@ const Inventory = () => {
   const { data: items = [] } = useQuery({
     queryKey: ["inventory"],
     queryFn: inventoryAPI.getAll,
+  });
+
+  const { data: sellers = [] } = useQuery({
+    queryKey: ["sellers"],
+    queryFn: sellersAPI.getAll,
   });
 
   const createMutation = useMutation({
@@ -104,6 +110,7 @@ const Inventory = () => {
     unit: "",
     purchasePrice: 0,
     sellingPrice: 0,
+    sellerId: null,
     lowStockAlert: false,
   });
 
@@ -129,6 +136,7 @@ const Inventory = () => {
       unit: item.unit,
       purchasePrice: item.purchasePrice,
       sellingPrice: item.sellingPrice,
+      sellerId: item.sellerId,
       lowStockAlert: item.lowStockAlert,
     });
     setIsEditDialogOpen(true);
@@ -208,6 +216,11 @@ const Inventory = () => {
                   <div className="flex-1">
                     <h3 className="font-semibold">{item.name}</h3>
                     <p className="text-sm text-muted-foreground">{item.category}</p>
+                    {item.sellerId && sellers.find(s => s.id === item.sellerId) && (
+                      <p className="text-xs text-muted-foreground">
+                        Seller: {sellers.find(s => s.id === item.sellerId)?.name}
+                      </p>
+                    )}
                     <div className="flex gap-2 mt-2">
                       <Badge variant="outline" className="rounded-full">
                         ₹{item.sellingPrice}/{item.unit}
@@ -342,6 +355,24 @@ const Inventory = () => {
                 />
               </div>
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="seller">Seller (Optional)</Label>
+              <Select 
+                value={newItem.sellerId?.toString() || ""} 
+                onValueChange={(value) => setNewItem({ ...newItem, sellerId: value ? Number(value) : null })}
+              >
+                <SelectTrigger className="rounded-xl">
+                  <SelectValue placeholder="Select seller" />
+                </SelectTrigger>
+                <SelectContent>
+                  {sellers.map((seller) => (
+                    <SelectItem key={seller.id} value={seller.id.toString()}>
+                      {seller.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <Button type="submit" className="w-full rounded-xl" disabled={createMutation.isPending}>
               {createMutation.isPending ? "Adding..." : "Add Item"}
             </Button>
@@ -434,6 +465,24 @@ const Inventory = () => {
                   required
                 />
               </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="editSeller">Seller (Optional)</Label>
+              <Select 
+                value={editingItem?.sellerId?.toString() || ""} 
+                onValueChange={(value) => setEditingItem(editingItem ? { ...editingItem, sellerId: value ? Number(value) : null } : null)}
+              >
+                <SelectTrigger className="rounded-xl">
+                  <SelectValue placeholder="Select seller" />
+                </SelectTrigger>
+                <SelectContent>
+                  {sellers.map((seller) => (
+                    <SelectItem key={seller.id} value={seller.id.toString()}>
+                      {seller.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <Button type="submit" className="w-full rounded-xl" disabled={updateMutation.isPending}>
               {updateMutation.isPending ? "Updating..." : "Update Item"}

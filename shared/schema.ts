@@ -10,6 +10,7 @@ export const inventoryItems = pgTable("inventory_items", {
   unit: varchar("unit", { length: 50 }).notNull(),
   purchasePrice: integer("purchase_price").notNull(),
   sellingPrice: integer("selling_price").notNull(),
+  sellerId: integer("seller_id").references(() => sellers.id, { onDelete: "set null" }),
   lowStockAlert: boolean("low_stock_alert").notNull().default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });

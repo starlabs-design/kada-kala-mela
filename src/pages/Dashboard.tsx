@@ -9,7 +9,8 @@ import {
   FileText,
   ShoppingCart,
   Coffee,
-  AlertCircle
+  AlertCircle,
+  DollarSign
 } from "lucide-react";
 import { inventoryAPI, transactionsAPI } from "@/lib/api";
 
@@ -185,6 +186,16 @@ const Dashboard = () => {
                 <FileText className="h-12 w-12 text-secondary mx-auto mb-3" />
                 <p className="font-semibold">Reports</p>
                 <p className="text-xs text-muted-foreground mt-1">റിപ്പോർട്ടുകൾ</p>
+              </CardContent>
+            </Card>
+          </Link>
+
+          <Link to="/pricing">
+            <Card className="bg-card hover:bg-muted/50 transition-all shadow-lg border-0 cursor-pointer h-full">
+              <CardContent className="pt-6 text-center">
+                <DollarSign className="h-12 w-12 text-primary mx-auto mb-3" />
+                <p className="font-semibold">Pricing List</p>
+                <p className="text-xs text-muted-foreground mt-1">വില പട്ടിക</p>
               </CardContent>
             </Card>
           </Link>

@@ -131,7 +131,7 @@ const Expenses = () => {
       </div>
 
       {/* Summary Cards */}
-      <div className="px-4 -mt-6 grid grid-cols-2 gap-4 mb-6">
+      <div className="px-4 pt-6 grid grid-cols-2 gap-4 mb-6">
         <Card className="bg-success/10 border-success/20 shadow-lg">
           <CardContent className="pt-4">
             <div className="flex items-center gap-2 mb-1">
@@ -167,117 +167,144 @@ const Expenses = () => {
           </TabsList>
 
           <TabsContent value="all" className="space-y-3">
-            {transactions.map((transaction) => (
-              <Card key={transaction.id} className="bg-card shadow-md border-0">
-                <CardContent className="pt-4">
-                  <div className="flex justify-between items-start gap-3">
-                    <div className="flex-1">
-                      <h3 className="font-semibold">{transaction.category}</h3>
-                      <p className="text-sm text-muted-foreground">{transaction.notes}</p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {new Date(transaction.date).toLocaleDateString('en-IN', {
-                          day: 'numeric',
-                          month: 'short',
-                          year: 'numeric',
-                        })}
-                      </p>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <div className="text-right">
-                        <p
-                          className={`text-xl font-bold ${
-                            transaction.type === "income" ? "text-success" : "text-destructive"
-                          }`}
-                        >
-                          {transaction.type === "income" ? "+" : "-"}₹
-                          {transaction.amount.toLocaleString('en-IN')}
-                        </p>
-                        <Badge
-                          variant={transaction.type === "income" ? "default" : "destructive"}
-                          className="rounded-full mt-1"
-                        >
-                          {transaction.type === "income" ? "Income" : "Expense"}
-                        </Badge>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                        onClick={() => handleDeleteClick(transaction.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
+            {transactions.length === 0 ? (
+              <Card className="bg-card shadow-md border-0">
+                <CardContent className="pt-6 pb-6 text-center">
+                  <p className="text-muted-foreground">No transactions yet</p>
+                  <p className="text-sm text-muted-foreground mt-1">Add your first transaction to get started</p>
                 </CardContent>
               </Card>
-            ))}
+            ) : (
+              transactions.map((transaction) => (
+                <Card key={transaction.id} className="bg-card shadow-md border-0">
+                  <CardContent className="pt-4">
+                    <div className="flex justify-between items-start gap-3">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold truncate">{transaction.category}</h3>
+                        <p className="text-sm text-muted-foreground line-clamp-2">{transaction.notes}</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {new Date(transaction.date).toLocaleDateString('en-IN', {
+                            day: 'numeric',
+                            month: 'short',
+                            year: 'numeric',
+                          })}
+                        </p>
+                      </div>
+                      <div className="flex items-start gap-2 flex-shrink-0">
+                        <div className="text-right">
+                          <p
+                            className={`text-xl font-bold ${
+                              transaction.type === "income" ? "text-success" : "text-destructive"
+                            }`}
+                          >
+                            {transaction.type === "income" ? "+" : "-"}₹
+                            {transaction.amount.toLocaleString('en-IN')}
+                          </p>
+                          <Badge
+                            variant={transaction.type === "income" ? "default" : "destructive"}
+                            className="rounded-full mt-1"
+                          >
+                            {transaction.type === "income" ? "Income" : "Expense"}
+                          </Badge>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-9 w-9 text-destructive hover:text-destructive hover:bg-destructive/10"
+                          onClick={() => handleDeleteClick(transaction.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </TabsContent>
 
           <TabsContent value="income" className="space-y-3">
-            {transactions
-              .filter((t) => t.type === "income")
-              .map((transaction) => (
-                <Card key={transaction.id} className="bg-card shadow-md border-0">
-                  <CardContent className="pt-4">
-                    <div className="flex justify-between items-start gap-3">
-                      <div className="flex-1">
-                        <h3 className="font-semibold">{transaction.category}</h3>
-                        <p className="text-sm text-muted-foreground">{transaction.notes}</p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {new Date(transaction.date).toLocaleDateString('en-IN')}
-                        </p>
+            {transactions.filter((t) => t.type === "income").length === 0 ? (
+              <Card className="bg-card shadow-md border-0">
+                <CardContent className="pt-6 pb-6 text-center">
+                  <p className="text-muted-foreground">No income transactions yet</p>
+                  <p className="text-sm text-muted-foreground mt-1">Add an income transaction to track your earnings</p>
+                </CardContent>
+              </Card>
+            ) : (
+              transactions
+                .filter((t) => t.type === "income")
+                .map((transaction) => (
+                  <Card key={transaction.id} className="bg-card shadow-md border-0">
+                    <CardContent className="pt-4">
+                      <div className="flex justify-between items-start gap-3">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold truncate">{transaction.category}</h3>
+                          <p className="text-sm text-muted-foreground line-clamp-2">{transaction.notes}</p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {new Date(transaction.date).toLocaleDateString('en-IN')}
+                          </p>
+                        </div>
+                        <div className="flex items-start gap-2 flex-shrink-0">
+                          <p className="text-xl font-bold text-success">
+                            +₹{transaction.amount.toLocaleString('en-IN')}
+                          </p>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-9 w-9 text-destructive hover:text-destructive hover:bg-destructive/10"
+                            onClick={() => handleDeleteClick(transaction.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
-                      <div className="flex items-start gap-2">
-                        <p className="text-xl font-bold text-success">
-                          +₹{transaction.amount.toLocaleString('en-IN')}
-                        </p>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                          onClick={() => handleDeleteClick(transaction.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardContent>
+                  </Card>
+                ))
+            )}
           </TabsContent>
 
           <TabsContent value="expense" className="space-y-3">
-            {transactions
-              .filter((t) => t.type === "expense")
-              .map((transaction) => (
-                <Card key={transaction.id} className="bg-card shadow-md border-0">
-                  <CardContent className="pt-4">
-                    <div className="flex justify-between items-start gap-3">
-                      <div className="flex-1">
-                        <h3 className="font-semibold">{transaction.category}</h3>
-                        <p className="text-sm text-muted-foreground">{transaction.notes}</p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {new Date(transaction.date).toLocaleDateString('en-IN')}
-                        </p>
+            {transactions.filter((t) => t.type === "expense").length === 0 ? (
+              <Card className="bg-card shadow-md border-0">
+                <CardContent className="pt-6 pb-6 text-center">
+                  <p className="text-muted-foreground">No expense transactions yet</p>
+                  <p className="text-sm text-muted-foreground mt-1">Add an expense transaction to track your spending</p>
+                </CardContent>
+              </Card>
+            ) : (
+              transactions
+                .filter((t) => t.type === "expense")
+                .map((transaction) => (
+                  <Card key={transaction.id} className="bg-card shadow-md border-0">
+                    <CardContent className="pt-4">
+                      <div className="flex justify-between items-start gap-3">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold truncate">{transaction.category}</h3>
+                          <p className="text-sm text-muted-foreground line-clamp-2">{transaction.notes}</p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {new Date(transaction.date).toLocaleDateString('en-IN')}
+                          </p>
+                        </div>
+                        <div className="flex items-start gap-2 flex-shrink-0">
+                          <p className="text-xl font-bold text-destructive">
+                            -₹{transaction.amount.toLocaleString('en-IN')}
+                          </p>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-9 w-9 text-destructive hover:text-destructive hover:bg-destructive/10"
+                            onClick={() => handleDeleteClick(transaction.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
-                      <div className="flex items-start gap-2">
-                        <p className="text-xl font-bold text-destructive">
-                          -₹{transaction.amount.toLocaleString('en-IN')}
-                        </p>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                          onClick={() => handleDeleteClick(transaction.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardContent>
+                  </Card>
+                ))
+            )}
           </TabsContent>
         </Tabs>
       </div>
@@ -292,12 +319,12 @@ const Expenses = () => {
       </Button>
 
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-        <DialogContent className="rounded-3xl max-w-[90%]">
+        <DialogContent className="rounded-3xl max-w-[90%] sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Add Transaction</DialogTitle>
             <DialogDescription>Record income or expense</DialogDescription>
           </DialogHeader>
-          <form className="space-y-4 py-4">
+          <form onSubmit={(e) => { e.preventDefault(); handleAddTransaction(); }} className="space-y-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="type">Type</Label>
               <Select
@@ -325,6 +352,7 @@ const Expenses = () => {
                 }
                 placeholder="Enter category"
                 className="rounded-xl"
+                required
               />
             </div>
             <div className="space-y-2">
@@ -338,6 +366,8 @@ const Expenses = () => {
                 }
                 placeholder="₹0"
                 className="rounded-xl"
+                required
+                min="1"
               />
             </div>
             <div className="space-y-2">
@@ -350,6 +380,7 @@ const Expenses = () => {
                   setNewTransaction({ ...newTransaction, date: e.target.value })
                 }
                 className="rounded-xl"
+                required
               />
             </div>
             <div className="space-y-2">
@@ -367,6 +398,7 @@ const Expenses = () => {
           </form>
           <DialogFooter>
             <Button
+              type="button"
               variant="outline"
               onClick={() => setIsAddDialogOpen(false)}
               className="rounded-xl"
@@ -374,7 +406,7 @@ const Expenses = () => {
               Cancel
             </Button>
             <Button
-              onClick={handleAddTransaction}
+              type="submit"
               disabled={createMutation.isPending}
               className="rounded-xl"
             >
