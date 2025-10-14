@@ -32,7 +32,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, TrendingUp, TrendingDown, Trash2 } from "lucide-react";
+import { Plus, TrendingUp, TrendingDown, Trash2, Pencil } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { transactionsAPI } from "@/lib/api";
 import { toast } from "sonner";
@@ -44,6 +44,8 @@ const Expenses = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [transactionToDelete, setTransactionToDelete] = useState<number | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const [newTransaction, setNewTransaction] = useState({
     type: "income" as "income" | "expense",
     category: "",
@@ -51,6 +53,10 @@ const Expenses = () => {
     date: new Date().toISOString().split('T')[0],
     notes: ""
   });
+
+  const incomeCategories = ["Sales (വിൽപ്പന)", "Services (സേവനങ്ങൾ)", "Other Income (മറ്റ് വരുമാനം)"];
+  const expenseCategories = ["Purchases (സാധനങ്ങൾ വാങ്ങൽ)", "Tea & Snacks (ചായ & ലഘുഭക്ഷണം)", "Groceries (പലചരക്ക്)", "Electricity (വൈദ്യുതി)", "Rent (വാടക)", "Salaries (ശമ്പളം)", "Transportation (യാത്രാ ചെലവ്)", "Maintenance (അറ്റകുറ്റപ്പണി)", "Other Expense (മറ്റ് ചെലവുകൾ)"];
+  const availableCategories = newTransaction.type === "income" ? incomeCategories : expenseCategories;
 
   const { data: transactions = [] } = useQuery<Transaction[]>({
     queryKey: ["transactions"],
@@ -75,6 +81,8 @@ const Expenses = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["transactions"] });
       setIsAddDialogOpen(false);
+      setEditMode(false);
+      setEditingTransaction(null);
       setNewTransaction({
         type: "income",
         category: "",
@@ -89,6 +97,28 @@ const Expenses = () => {
     },
   });
 
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: number; data: Partial<{ type: "income" | "expense"; category: string; amount: number; date: string; notes?: string }> }) =>
+      transactionsAPI.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["transactions"] });
+      setIsAddDialogOpen(false);
+      setEditMode(false);
+      setEditingTransaction(null);
+      setNewTransaction({
+        type: "income",
+        category: "",
+        amount: "",
+        date: new Date().toISOString().split('T')[0],
+        notes: ""
+      });
+      toast.success("Transaction updated successfully");
+    },
+    onError: () => {
+      toast.error("Failed to update transaction");
+    },
+  });
+
   const handleDeleteClick = (id: number) => {
     setTransactionToDelete(id);
     setDeleteDialogOpen(true);
@@ -100,18 +130,51 @@ const Expenses = () => {
     }
   };
 
-  const handleAddTransaction = () => {
+  const handleEditClick = (transaction: Transaction) => {
+    setEditMode(true);
+    setEditingTransaction(transaction);
+    setNewTransaction({
+      type: transaction.type,
+      category: transaction.category,
+      amount: transaction.amount.toString(),
+      date: transaction.date,
+      notes: transaction.notes || ""
+    });
+    setIsAddDialogOpen(true);
+  };
+
+  const handleAddClick = () => {
+    setEditMode(false);
+    setEditingTransaction(null);
+    setNewTransaction({
+      type: "income",
+      category: "",
+      amount: "",
+      date: new Date().toISOString().split('T')[0],
+      notes: ""
+    });
+    setIsAddDialogOpen(true);
+  };
+
+  const handleSaveTransaction = () => {
     if (!newTransaction.category || !newTransaction.amount || !newTransaction.date) {
       toast.error("Please fill in all required fields");
       return;
     }
-    createMutation.mutate({
+
+    const transactionData = {
       type: newTransaction.type,
       category: newTransaction.category,
       amount: parseInt(newTransaction.amount),
       date: newTransaction.date,
       notes: newTransaction.notes || undefined
-    });
+    };
+
+    if (editMode && editingTransaction) {
+      updateMutation.mutate({ id: editingTransaction.id, data: transactionData });
+    } else {
+      createMutation.mutate(transactionData);
+    }
   };
 
   const totalIncome = transactions
@@ -207,14 +270,24 @@ const Expenses = () => {
                             {transaction.type === "income" ? "Income" : "Expense"}
                           </Badge>
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-9 w-9 text-destructive hover:text-destructive hover:bg-destructive/10"
-                          onClick={() => handleDeleteClick(transaction.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        <div className="flex flex-col gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-9 w-9 text-primary hover:text-primary hover:bg-primary/10"
+                            onClick={() => handleEditClick(transaction)}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-9 w-9 text-destructive hover:text-destructive hover:bg-destructive/10"
+                            onClick={() => handleDeleteClick(transaction.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   </CardContent>
@@ -249,14 +322,24 @@ const Expenses = () => {
                           <p className="text-xl font-bold text-success">
                             +₹{transaction.amount.toLocaleString('en-IN')}
                           </p>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-9 w-9 text-destructive hover:text-destructive hover:bg-destructive/10"
-                            onClick={() => handleDeleteClick(transaction.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                          <div className="flex flex-col gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-9 w-9 text-primary hover:text-primary hover:bg-primary/10"
+                              onClick={() => handleEditClick(transaction)}
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-9 w-9 text-destructive hover:text-destructive hover:bg-destructive/10"
+                              onClick={() => handleDeleteClick(transaction.id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     </CardContent>
@@ -291,14 +374,24 @@ const Expenses = () => {
                           <p className="text-xl font-bold text-destructive">
                             -₹{transaction.amount.toLocaleString('en-IN')}
                           </p>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-9 w-9 text-destructive hover:text-destructive hover:bg-destructive/10"
-                            onClick={() => handleDeleteClick(transaction.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                          <div className="flex flex-col gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-9 w-9 text-primary hover:text-primary hover:bg-primary/10"
+                              onClick={() => handleEditClick(transaction)}
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-9 w-9 text-destructive hover:text-destructive hover:bg-destructive/10"
+                              onClick={() => handleDeleteClick(transaction.id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     </CardContent>
@@ -313,7 +406,7 @@ const Expenses = () => {
       <Button
         className="fixed bottom-24 right-6 h-14 w-14 rounded-full shadow-lg"
         size="icon"
-        onClick={() => setIsAddDialogOpen(true)}
+        onClick={handleAddClick}
       >
         <Plus className="h-6 w-6" />
       </Button>
@@ -321,67 +414,80 @@ const Expenses = () => {
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
         <DialogContent className="rounded-3xl max-w-[90%] sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Add Transaction</DialogTitle>
-            <DialogDescription>Record income or expense</DialogDescription>
+            <DialogTitle>{editMode ? "Edit Transaction" : "Add Transaction"}</DialogTitle>
+            <DialogDescription>
+              {editMode ? "Update transaction details" : "Record income or expense"}
+            </DialogDescription>
           </DialogHeader>
-          <form onSubmit={(e) => { e.preventDefault(); handleAddTransaction(); }} className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="type">Type</Label>
-              <Select
-                value={newTransaction.type}
-                onValueChange={(value) =>
-                  setNewTransaction({ ...newTransaction, type: value as "income" | "expense" })
-                }
-              >
-                <SelectTrigger className="rounded-xl">
-                  <SelectValue placeholder="Select type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="income">Income</SelectItem>
-                  <SelectItem value="expense">Expense</SelectItem>
-                </SelectContent>
-              </Select>
+          <form onSubmit={(e) => { e.preventDefault(); handleSaveTransaction(); }} className="space-y-4 py-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="type">Type</Label>
+                <Select
+                  value={newTransaction.type}
+                  onValueChange={(value) =>
+                    setNewTransaction({ ...newTransaction, type: value as "income" | "expense", category: "" })
+                  }
+                >
+                  <SelectTrigger className="rounded-xl">
+                    <SelectValue placeholder="Select type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="income">Income</SelectItem>
+                    <SelectItem value="expense">Expense</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="category">Category</Label>
+                <Select
+                  value={newTransaction.category}
+                  onValueChange={(value) =>
+                    setNewTransaction({ ...newTransaction, category: value })
+                  }
+                >
+                  <SelectTrigger className="rounded-xl">
+                    <SelectValue placeholder="Select category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableCategories.map((category) => (
+                      <SelectItem key={category} value={category}>
+                        {category}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="category">Category</Label>
-              <Input
-                id="category"
-                value={newTransaction.category}
-                onChange={(e) =>
-                  setNewTransaction({ ...newTransaction, category: e.target.value })
-                }
-                placeholder="Enter category"
-                className="rounded-xl"
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="amount">Amount</Label>
-              <Input
-                id="amount"
-                type="number"
-                value={newTransaction.amount}
-                onChange={(e) =>
-                  setNewTransaction({ ...newTransaction, amount: e.target.value })
-                }
-                placeholder="₹0"
-                className="rounded-xl"
-                required
-                min="1"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="date">Date</Label>
-              <Input
-                id="date"
-                type="date"
-                value={newTransaction.date}
-                onChange={(e) =>
-                  setNewTransaction({ ...newTransaction, date: e.target.value })
-                }
-                className="rounded-xl"
-                required
-              />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="amount">Amount</Label>
+                <Input
+                  id="amount"
+                  type="number"
+                  value={newTransaction.amount}
+                  onChange={(e) =>
+                    setNewTransaction({ ...newTransaction, amount: e.target.value })
+                  }
+                  placeholder="₹0"
+                  className="rounded-xl"
+                  required
+                  min="1"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="date">Date</Label>
+                <Input
+                  id="date"
+                  type="date"
+                  value={newTransaction.date}
+                  onChange={(e) =>
+                    setNewTransaction({ ...newTransaction, date: e.target.value })
+                  }
+                  className="rounded-xl"
+                  required
+                />
+              </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="notes">Notes (Optional)</Label>
@@ -392,25 +498,26 @@ const Expenses = () => {
                   setNewTransaction({ ...newTransaction, notes: e.target.value })
                 }
                 placeholder="Add notes..."
-                className="rounded-xl"
+                className="rounded-xl min-h-[80px]"
               />
             </div>
           </form>
-          <DialogFooter>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
             <Button
               type="button"
               variant="outline"
               onClick={() => setIsAddDialogOpen(false)}
-              className="rounded-xl"
+              className="rounded-xl w-full sm:w-auto"
             >
               Cancel
             </Button>
             <Button
               type="submit"
-              disabled={createMutation.isPending}
-              className="rounded-xl"
+              onClick={handleSaveTransaction}
+              disabled={createMutation.isPending || updateMutation.isPending}
+              className="rounded-xl w-full sm:w-auto"
             >
-              {createMutation.isPending ? "Saving..." : "Save"}
+              {(createMutation.isPending || updateMutation.isPending) ? "Saving..." : "Save"}
             </Button>
           </DialogFooter>
         </DialogContent>

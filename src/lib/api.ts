@@ -73,6 +73,11 @@ export const transactionsAPI = {
       method: "POST",
       body: JSON.stringify(data),
     }),
+  update: (id: number, data: Partial<InsertTransaction>) =>
+    fetchAPI<Transaction>(`/api/transactions/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    }),
   delete: (id: number) =>
     fetchAPI<{ success: boolean }>(`/api/transactions/${id}`, {
       method: "DELETE",
