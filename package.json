@@ -4,9 +4,12 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "bun --watch server/index.ts",
     "build": "vite build",
     "build:dev": "vite build --mode development",
+    "start": "NODE_ENV=production bun server/index.ts",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio",
     "lint": "eslint .",
     "preview": "vite preview"
   },

@@ -1,0 +1,122 @@
+import { db } from "./db";
+import { inventoryItems, sellers, transactions, settings } from "@shared/schema";
+import type { 
+  InventoryItem, 
+  InsertInventoryItem, 
+  Seller, 
+  InsertSeller, 
+  Transaction, 
+  InsertTransaction,
+  Settings,
+  InsertSettings
+} from "@shared/schema";
+import { eq, desc } from "drizzle-orm";
+
+export interface IStorage {
+  getInventoryItems(): Promise<InventoryItem[]>;
+  getInventoryItem(id: number): Promise<InventoryItem | undefined>;
+  createInventoryItem(item: InsertInventoryItem): Promise<InventoryItem>;
+  updateInventoryItem(id: number, item: Partial<InsertInventoryItem>): Promise<InventoryItem | undefined>;
+  deleteInventoryItem(id: number): Promise<void>;
+
+  getSellers(): Promise<Seller[]>;
+  getSeller(id: number): Promise<Seller | undefined>;
+  createSeller(seller: InsertSeller): Promise<Seller>;
+  updateSeller(id: number, seller: Partial<InsertSeller>): Promise<Seller | undefined>;
+  deleteSeller(id: number): Promise<void>;
+
+  getTransactions(): Promise<Transaction[]>;
+  getTransaction(id: number): Promise<Transaction | undefined>;
+  createTransaction(transaction: InsertTransaction): Promise<Transaction>;
+  deleteTransaction(id: number): Promise<void>;
+
+  getSettings(): Promise<Settings | undefined>;
+  updateSettings(settings: Partial<InsertSettings>): Promise<Settings>;
+}
+
+export class DbStorage implements IStorage {
+  async getInventoryItems(): Promise<InventoryItem[]> {
+    return await db.select().from(inventoryItems).orderBy(desc(inventoryItems.createdAt));
+  }
+
+  async getInventoryItem(id: number): Promise<InventoryItem | undefined> {
+    const result = await db.select().from(inventoryItems).where(eq(inventoryItems.id, id));
+    return result[0];
+  }
+
+  async createInventoryItem(item: InsertInventoryItem): Promise<InventoryItem> {
+    const result = await db.insert(inventoryItems).values(item).returning();
+    return result[0];
+  }
+
+  async updateInventoryItem(id: number, item: Partial<InsertInventoryItem>): Promise<InventoryItem | undefined> {
+    const result = await db.update(inventoryItems).set(item).where(eq(inventoryItems.id, id)).returning();
+    return result[0];
+  }
+
+  async deleteInventoryItem(id: number): Promise<void> {
+    await db.delete(inventoryItems).where(eq(inventoryItems.id, id));
+  }
+
+  async getSellers(): Promise<Seller[]> {
+    return await db.select().from(sellers).orderBy(desc(sellers.createdAt));
+  }
+
+  async getSeller(id: number): Promise<Seller | undefined> {
+    const result = await db.select().from(sellers).where(eq(sellers.id, id));
+    return result[0];
+  }
+
+  async createSeller(seller: InsertSeller): Promise<Seller> {
+    const result = await db.insert(sellers).values(seller).returning();
+    return result[0];
+  }
+
+  async updateSeller(id: number, seller: Partial<InsertSeller>): Promise<Seller | undefined> {
+    const result = await db.update(sellers).set(seller).where(eq(sellers.id, id)).returning();
+    return result[0];
+  }
+
+  async deleteSeller(id: number): Promise<void> {
+    await db.delete(sellers).where(eq(sellers.id, id));
+  }
+
+  async getTransactions(): Promise<Transaction[]> {
+    return await db.select().from(transactions).orderBy(desc(transactions.date), desc(transactions.createdAt));
+  }
+
+  async getTransaction(id: number): Promise<Transaction | undefined> {
+    const result = await db.select().from(transactions).where(eq(transactions.id, id));
+    return result[0];
+  }
+
+  async createTransaction(transaction: InsertTransaction): Promise<Transaction> {
+    const result = await db.insert(transactions).values(transaction).returning();
+    return result[0];
+  }
+
+  async deleteTransaction(id: number): Promise<void> {
+    await db.delete(transactions).where(eq(transactions.id, id));
+  }
+
+  async getSettings(): Promise<Settings | undefined> {
+    const result = await db.select().from(settings).limit(1);
+    if (result.length === 0) {
+      const defaultSettings = await db.insert(settings).values({}).returning();
+      return defaultSettings[0];
+    }
+    return result[0];
+  }
+
+  async updateSettings(settingsData: Partial<InsertSettings>): Promise<Settings> {
+    const existing = await this.getSettings();
+    if (existing) {
+      const result = await db.update(settings).set(settingsData).where(eq(settings.id, existing.id)).returning();
+      return result[0];
+    }
+    const result = await db.insert(settings).values(settingsData).returning();
+    return result[0];
+  }
+}
+
+export const storage = new DbStorage();
