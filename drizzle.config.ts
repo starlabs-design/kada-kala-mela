@@ -1,11 +1,7 @@
 import { defineConfig } from "drizzle-kit";
 
-const databaseUrl = process.env.PGDATABASE 
-  ? `postgresql://${process.env.PGUSER}:${process.env.PGPASSWORD}@${process.env.PGHOST}:${process.env.PGPORT}/${process.env.PGDATABASE}`
-  : process.env.DATABASE_URL;
-
-if (!databaseUrl) {
-  throw new Error("Database credentials not found");
+if (!process.env.DATABASE_URL) {
+  throw new Error("DATABASE_URL is required");
 }
 
 export default defineConfig({
@@ -13,6 +9,6 @@ export default defineConfig({
   schema: "./shared/schema.ts",
   dialect: "postgresql",
   dbCredentials: {
-    url: databaseUrl,
+    url: process.env.DATABASE_URL,
   },
 });
