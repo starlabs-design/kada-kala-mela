@@ -40,6 +40,28 @@ const Dashboard = () => {
   const lowStockItems = inventory.filter(item => item.lowStockAlert || item.quantity < 10);
   const lowStockCount = lowStockItems.length;
 
+  // Calculate category-based income data
+  const todayIncomeTransactions = todayTransactions.filter(t => t.type === "income");
+  const categoryData = todayIncomeTransactions.reduce((acc, t) => {
+    if (!acc[t.category]) {
+      acc[t.category] = 0;
+    }
+    acc[t.category] += t.amount;
+    return acc;
+  }, {} as Record<string, number>);
+
+  const categoryPerformance = Object.entries(categoryData).map(([category, amount]) => ({
+    category,
+    amount,
+    percentage: todaySales > 0 ? (amount / todaySales) * 100 : 0
+  }));
+
+  // Define colors for different categories
+  const getColorClass = (index: number) => {
+    const colors = ['bg-primary', 'bg-secondary', 'bg-success'];
+    return colors[index % colors.length];
+  };
+
   return (
     <div className="min-h-screen bg-background pb-20">
       {/* Header */}
@@ -174,26 +196,28 @@ const Dashboard = () => {
         <h2 className="text-lg font-semibold mb-4">Today's Performance</h2>
         <Card className="bg-card shadow-lg border-0">
           <CardContent className="pt-6">
-            <div className="space-y-4">
-              <div>
-                <div className="flex justify-between mb-2">
-                  <span className="text-sm font-medium">Tea & Snacks</span>
-                  <span className="text-sm font-bold">₹1,200</span>
-                </div>
-                <div className="w-full bg-muted rounded-full h-2">
-                  <div className="bg-primary h-2 rounded-full" style={{ width: '65%' }}></div>
-                </div>
+            {categoryPerformance.length > 0 ? (
+              <div className="space-y-4">
+                {categoryPerformance.map((item, index) => (
+                  <div key={item.category}>
+                    <div className="flex justify-between mb-2">
+                      <span className="text-sm font-medium">{item.category}</span>
+                      <span className="text-sm font-bold">₹{item.amount.toLocaleString('en-IN')}</span>
+                    </div>
+                    <div className="w-full bg-muted rounded-full h-2">
+                      <div 
+                        className={`${getColorClass(index)} h-2 rounded-full`} 
+                        style={{ width: `${item.percentage}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                ))}
               </div>
-              <div>
-                <div className="flex justify-between mb-2">
-                  <span className="text-sm font-medium">Groceries</span>
-                  <span className="text-sm font-bold">₹1,250</span>
-                </div>
-                <div className="w-full bg-muted rounded-full h-2">
-                  <div className="bg-secondary h-2 rounded-full" style={{ width: '70%' }}></div>
-                </div>
-              </div>
-            </div>
+            ) : (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                No transactions recorded today
+              </p>
+            )}
           </CardContent>
         </Card>
       </div>
