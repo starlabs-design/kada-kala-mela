@@ -7,6 +7,16 @@ Kada Manager is a mobile-first inventory and expense management application desi
 ## Recent Changes
 
 **October 14, 2025:**
+- **Configurable Low Stock Alerts:** Added settings to configure different low stock limits for different unit types (kg, liters, pack, pieces, and default for others)
+  - New database schema fields: lowStockLimitKg, lowStockLimitLiters, lowStockLimitPack, lowStockLimitPieces, lowStockLimitDefault
+  - Helper functions (getLowStockLimit, isLowStock) in utils.ts to determine low stock based on unit type
+  - Updated Inventory and Dashboard pages to use settings-based low stock detection instead of hardcoded values
+  - Settings page includes "Low Stock Alert Settings" card with input fields for each unit type
+- **Progressive Web App (PWA) Support:** Made the website installable as a PWA
+  - Added manifest.json with app configuration (name, icons, theme color, display mode)
+  - Implemented service worker for offline functionality with network-first strategy for API calls
+  - Updated index.html with PWA meta tags and service worker registration
+  - Caches only static assets while keeping API data fresh
 - Fixed dark mode functionality by adding ThemeProvider from next-themes to App.tsx
 - Dark mode now properly syncs with database settings and persists across sessions
 - Implemented complete backup/restore system:
