@@ -99,8 +99,24 @@ All colors MUST be HSL.
     @apply border-border;
   }
 
+  html, body {
+    height: 100%;
+    width: 100%;
+    overflow-x: hidden;
+    position: fixed;
+    overscroll-behavior: none;
+  }
+
   body {
     @apply bg-background text-foreground font-poppins;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left);
+  }
+
+  #root {
+    height: 100%;
+    width: 100%;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
   
   h1, h2, h3, h4, h5, h6 {
