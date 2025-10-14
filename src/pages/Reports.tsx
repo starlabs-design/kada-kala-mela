@@ -1,20 +1,99 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, Download, Share2, Calendar } from "lucide-react";
+import { TrendingUp, TrendingDown, Download, Share2, Calendar } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
+import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { transactionsAPI } from "@/lib/api";
+import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, format, subMonths } from "date-fns";
 
 const Reports = () => {
-  const weeklyData = {
-    sales: 17250,
-    expenses: 9500,
-    profit: 7750,
+  const [period, setPeriod] = useState<"week" | "month">("week");
+
+  const { data: transactions = [] } = useQuery({
+    queryKey: ["transactions"],
+    queryFn: () => transactionsAPI.getAll(),
+  });
+
+  const today = new Date();
+  
+  const weekStart = startOfWeek(today, { weekStartsOn: 1 });
+  const weekEnd = endOfWeek(today, { weekStartsOn: 1 });
+  
+  const monthStart = startOfMonth(today);
+  const monthEnd = endOfMonth(today);
+  
+  const lastMonthStart = startOfMonth(subMonths(today, 1));
+  const lastMonthEnd = endOfMonth(subMonths(today, 1));
+
+  const filterTransactionsByDateRange = (startDate: Date, endDate: Date) => {
+    return transactions.filter(t => {
+      const transactionDate = new Date(t.date);
+      return transactionDate >= startDate && transactionDate <= endDate;
+    });
   };
 
-  const monthlyData = {
-    sales: 73500,
-    expenses: 42000,
-    profit: 31500,
+  const weekTransactions = filterTransactionsByDateRange(weekStart, weekEnd);
+  const monthTransactions = filterTransactionsByDateRange(monthStart, monthEnd);
+  const lastMonthTransactions = filterTransactionsByDateRange(lastMonthStart, lastMonthEnd);
+
+  const calculateSummary = (transactionList: typeof transactions) => {
+    const sales = transactionList
+      .filter(t => t.type === "income")
+      .reduce((sum, t) => sum + t.amount, 0);
+    
+    const expenses = transactionList
+      .filter(t => t.type === "expense")
+      .reduce((sum, t) => sum + t.amount, 0);
+    
+    const profit = sales - expenses;
+    
+    return { sales, expenses, profit };
   };
+
+  const weeklyData = calculateSummary(weekTransactions);
+  const monthlyData = calculateSummary(monthTransactions);
+  const lastMonthData = calculateSummary(lastMonthTransactions);
+
+  const currentPeriodTransactions = period === "week" ? weekTransactions : monthTransactions;
+  
+  const getCategoryPerformance = () => {
+    const incomeTransactions = currentPeriodTransactions.filter(t => t.type === "income");
+    const totalSales = incomeTransactions.reduce((sum, t) => sum + t.amount, 0);
+    
+    if (totalSales === 0) {
+      return [];
+    }
+    
+    const categoryMap = new Map<string, number>();
+    
+    incomeTransactions.forEach(t => {
+      const current = categoryMap.get(t.category) || 0;
+      categoryMap.set(t.category, current + t.amount);
+    });
+    
+    return Array.from(categoryMap.entries()).map(([category, amount]) => ({
+      category,
+      amount,
+      percentage: (amount / totalSales) * 100,
+    })).sort((a, b) => b.amount - a.amount);
+  };
+
+  const categoryPerformance = getCategoryPerformance();
+
+  const calculateGrowth = () => {
+    if (lastMonthData.profit === 0) {
+      if (monthlyData.profit > 0) {
+        return { growth: 100, isPositive: true };
+      }
+      return { growth: 0, isPositive: true };
+    }
+    
+    const growth = ((monthlyData.profit - lastMonthData.profit) / Math.abs(lastMonthData.profit)) * 100;
+    return { growth, isPositive: growth >= 0 };
+  };
+
+  const { growth, isPositive } = calculateGrowth();
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -27,11 +106,19 @@ const Reports = () => {
       {/* Period Selector */}
       <div className="px-4 py-4">
         <div className="flex gap-2">
-          <Button variant="default" className="rounded-full gap-2">
+          <Button 
+            variant={period === "week" ? "default" : "outline"} 
+            className="rounded-full gap-2"
+            onClick={() => setPeriod("week")}
+          >
             <Calendar className="h-4 w-4" />
             This Week
           </Button>
-          <Button variant="outline" className="rounded-full gap-2">
+          <Button 
+            variant={period === "month" ? "default" : "outline"} 
+            className="rounded-full gap-2"
+            onClick={() => setPeriod("month")}
+          >
             <Calendar className="h-4 w-4" />
             This Month
           </Button>
@@ -43,7 +130,9 @@ const Reports = () => {
         <h2 className="text-lg font-semibold mb-4">Weekly Summary</h2>
         <Card className="bg-card shadow-lg border-0">
           <CardHeader>
-            <CardTitle className="text-base">Oct 7 - Oct 14, 2025</CardTitle>
+            <CardTitle className="text-base">
+              {format(weekStart, "MMM d")} - {format(weekEnd, "MMM d, yyyy")}
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex justify-between items-center">
@@ -75,7 +164,7 @@ const Reports = () => {
         <h2 className="text-lg font-semibold mb-4">Monthly Summary</h2>
         <Card className="bg-card shadow-lg border-0">
           <CardHeader>
-            <CardTitle className="text-base">October 2025</CardTitle>
+            <CardTitle className="text-base">{format(today, "MMMM yyyy")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex justify-between items-center">
@@ -107,26 +196,29 @@ const Reports = () => {
         <h2 className="text-lg font-semibold mb-4">Category Performance</h2>
         <Card className="bg-card shadow-lg border-0">
           <CardContent className="pt-6 space-y-4">
-            <div>
-              <div className="flex justify-between mb-2">
-                <span className="font-medium">Tea & Snacks</span>
-                <span className="font-bold">₹8,400</span>
-              </div>
-              <div className="w-full bg-muted rounded-full h-3">
-                <div className="bg-primary h-3 rounded-full" style={{ width: '48%' }}></div>
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">48% of total sales</p>
-            </div>
-            <div>
-              <div className="flex justify-between mb-2">
-                <span className="font-medium">Groceries</span>
-                <span className="font-bold">₹8,850</span>
-              </div>
-              <div className="w-full bg-muted rounded-full h-3">
-                <div className="bg-secondary h-3 rounded-full" style={{ width: '52%' }}></div>
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">52% of total sales</p>
-            </div>
+            {categoryPerformance.length > 0 ? (
+              categoryPerformance.map((item, index) => (
+                <div key={index}>
+                  <div className="flex justify-between mb-2">
+                    <span className="font-medium">{item.category}</span>
+                    <span className="font-bold">₹{item.amount.toLocaleString('en-IN')}</span>
+                  </div>
+                  <div className="w-full bg-muted rounded-full h-3">
+                    <div 
+                      className={`h-3 rounded-full ${index % 2 === 0 ? 'bg-primary' : 'bg-secondary'}`}
+                      style={{ width: `${item.percentage}%` }}
+                    ></div>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {item.percentage.toFixed(1)}% of total sales
+                  </p>
+                </div>
+              ))
+            ) : (
+              <p className="text-center text-muted-foreground py-4">
+                No income data available for the selected period
+              </p>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -145,13 +237,21 @@ const Reports = () => {
 
       {/* Growth Indicator */}
       <div className="px-4 mt-6">
-        <Card className="bg-success/10 border-success/20 shadow-lg">
+        <Card className={`${isPositive ? 'bg-success/10 border-success/20' : 'bg-destructive/10 border-destructive/20'} shadow-lg`}>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <TrendingUp className="h-8 w-8 text-success" />
+              {isPositive ? (
+                <TrendingUp className="h-8 w-8 text-success" />
+              ) : (
+                <TrendingDown className="h-8 w-8 text-destructive" />
+              )}
               <div>
-                <p className="font-semibold text-success">Growth This Month</p>
-                <p className="text-2xl font-bold text-success">+12.5%</p>
+                <p className={`font-semibold ${isPositive ? 'text-success' : 'text-destructive'}`}>
+                  Growth This Month
+                </p>
+                <p className={`text-2xl font-bold ${isPositive ? 'text-success' : 'text-destructive'}`}>
+                  {isPositive ? '+' : ''}{growth.toFixed(1)}%
+                </p>
                 <p className="text-sm text-muted-foreground">Compared to last month</p>
               </div>
             </div>
