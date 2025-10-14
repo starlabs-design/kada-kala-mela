@@ -54,8 +54,8 @@ const Expenses = () => {
     notes: ""
   });
 
-  const incomeCategories = ["Sales (വിൽപ്പന)", "Services (സേവനങ്ങൾ)", "Other Income (മറ്റ് വരുമാനം)"];
-  const expenseCategories = ["Purchases (സാധനങ്ങൾ വാങ്ങൽ)", "Tea & Snacks (ചായ & ലഘുഭക്ഷണം)", "Groceries (പലചരക്ക്)", "Electricity (വൈദ്യുതി)", "Rent (വാടക)", "Salaries (ശമ്പളം)", "Transportation (യാത്രാ ചെലവ്)", "Maintenance (അറ്റകുറ്റപ്പണി)", "Other Expense (മറ്റ് ചെലവുകൾ)"];
+  const incomeCategories = ["Tea & Beverages Sales", "Snacks Sales", "Grocery Sales", "Special / Seasonal Items"];
+  const expenseCategories = ["Inventory / Purchases", "Rent & Utilities", "Packaging & Supplies", "Transportation", "Maintenance & Cleaning", "Wages / Labor", "Marketing & Advertising", "Licenses & Fees", "Equipment & Tools", "Miscellaneous / Others"];
   const availableCategories = newTransaction.type === "income" ? incomeCategories : expenseCategories;
 
   const { data: transactions = [] } = useQuery<Transaction[]>({
@@ -419,7 +419,7 @@ const Expenses = () => {
               {editMode ? "Update transaction details" : "Record income or expense"}
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={(e) => { e.preventDefault(); handleSaveTransaction(); }} className="space-y-4 py-4 overflow-y-auto flex-grow">
+          <form onSubmit={(e) => { e.preventDefault(); handleSaveTransaction(); }} className="space-y-4 py-4 px-1 overflow-y-auto flex-grow">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="type">Type</Label>

@@ -10,7 +10,8 @@ import {
   ShoppingCart,
   Coffee,
   AlertCircle,
-  DollarSign
+  DollarSign,
+  Settings as SettingsIcon
 } from "lucide-react";
 import { inventoryAPI, transactionsAPI } from "@/lib/api";
 
@@ -196,6 +197,16 @@ const Dashboard = () => {
                 <DollarSign className="h-12 w-12 text-primary mx-auto mb-3" />
                 <p className="font-semibold">Pricing List</p>
                 <p className="text-xs text-muted-foreground mt-1">വില പട്ടിക</p>
+              </CardContent>
+            </Card>
+          </Link>
+
+          <Link to="/settings">
+            <Card className="bg-card hover:bg-muted/50 transition-all shadow-lg border-0 cursor-pointer h-full">
+              <CardContent className="pt-6 text-center">
+                <SettingsIcon className="h-12 w-12 text-secondary mx-auto mb-3" />
+                <p className="font-semibold">Settings</p>
+                <p className="text-xs text-muted-foreground mt-1">ക്രമീകരണങ്ങൾ</p>
               </CardContent>
             </Card>
           </Link>

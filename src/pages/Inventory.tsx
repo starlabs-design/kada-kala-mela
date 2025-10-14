@@ -178,27 +178,111 @@ const Inventory = () => {
           />
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex gap-2 overflow-x-auto pb-2">
           <Button
             variant={selectedCategory === "all" ? "default" : "outline"}
             onClick={() => setSelectedCategory("all")}
-            className="rounded-full"
+            className="rounded-full flex-shrink-0"
           >
             All
           </Button>
           <Button
-            variant={selectedCategory === "Tea & Snacks" ? "default" : "outline"}
-            onClick={() => setSelectedCategory("Tea & Snacks")}
-            className="rounded-full"
+            variant={selectedCategory === "Inventory / Purchases" ? "default" : "outline"}
+            onClick={() => setSelectedCategory("Inventory / Purchases")}
+            className="rounded-full flex-shrink-0 text-xs"
           >
-            Tea & Snacks
+            Inventory
           </Button>
           <Button
-            variant={selectedCategory === "Groceries" ? "default" : "outline"}
-            onClick={() => setSelectedCategory("Groceries")}
-            className="rounded-full"
+            variant={selectedCategory === "Rent & Utilities" ? "default" : "outline"}
+            onClick={() => setSelectedCategory("Rent & Utilities")}
+            className="rounded-full flex-shrink-0 text-xs"
           >
-            Groceries
+            Rent
+          </Button>
+          <Button
+            variant={selectedCategory === "Packaging & Supplies" ? "default" : "outline"}
+            onClick={() => setSelectedCategory("Packaging & Supplies")}
+            className="rounded-full flex-shrink-0 text-xs"
+          >
+            Packaging
+          </Button>
+          <Button
+            variant={selectedCategory === "Transportation" ? "default" : "outline"}
+            onClick={() => setSelectedCategory("Transportation")}
+            className="rounded-full flex-shrink-0 text-xs"
+          >
+            Transport
+          </Button>
+          <Button
+            variant={selectedCategory === "Maintenance & Cleaning" ? "default" : "outline"}
+            onClick={() => setSelectedCategory("Maintenance & Cleaning")}
+            className="rounded-full flex-shrink-0 text-xs"
+          >
+            Maintenance
+          </Button>
+          <Button
+            variant={selectedCategory === "Wages / Labor" ? "default" : "outline"}
+            onClick={() => setSelectedCategory("Wages / Labor")}
+            className="rounded-full flex-shrink-0 text-xs"
+          >
+            Wages
+          </Button>
+          <Button
+            variant={selectedCategory === "Marketing & Advertising" ? "default" : "outline"}
+            onClick={() => setSelectedCategory("Marketing & Advertising")}
+            className="rounded-full flex-shrink-0 text-xs"
+          >
+            Marketing
+          </Button>
+          <Button
+            variant={selectedCategory === "Licenses & Fees" ? "default" : "outline"}
+            onClick={() => setSelectedCategory("Licenses & Fees")}
+            className="rounded-full flex-shrink-0 text-xs"
+          >
+            Licenses
+          </Button>
+          <Button
+            variant={selectedCategory === "Equipment & Tools" ? "default" : "outline"}
+            onClick={() => setSelectedCategory("Equipment & Tools")}
+            className="rounded-full flex-shrink-0 text-xs"
+          >
+            Equipment
+          </Button>
+          <Button
+            variant={selectedCategory === "Miscellaneous / Others" ? "default" : "outline"}
+            onClick={() => setSelectedCategory("Miscellaneous / Others")}
+            className="rounded-full flex-shrink-0 text-xs"
+          >
+            Miscellaneous
+          </Button>
+          <Button
+            variant={selectedCategory === "Tea & Beverages Sales" ? "default" : "outline"}
+            onClick={() => setSelectedCategory("Tea & Beverages Sales")}
+            className="rounded-full flex-shrink-0 text-xs"
+          >
+            Tea
+          </Button>
+          <Button
+            variant={selectedCategory === "Snacks Sales" ? "default" : "outline"}
+            onClick={() => setSelectedCategory("Snacks Sales")}
+            className="rounded-full flex-shrink-0 text-xs"
+          >
+            Snacks
+          </Button>
+          <Button
+            variant={selectedCategory === "Grocery Sales" ? "default" : "outline"}
+            onClick={() => setSelectedCategory("Grocery Sales")}
+            className="rounded-full flex-shrink-0 text-xs"
+          >
+            Grocery
+          </Button>
+          <Button
+            variant={selectedCategory === "Special / Seasonal Items" ? "default" : "outline"}
+            onClick={() => setSelectedCategory("Special / Seasonal Items")}
+            className="rounded-full flex-shrink-0 text-xs"
+          >
+            Special
           </Button>
         </div>
       </div>
@@ -274,12 +358,12 @@ const Inventory = () => {
             <Plus className="h-6 w-6" />
           </Button>
         </DialogTrigger>
-        <DialogContent className="rounded-3xl max-w-[90%]">
-          <DialogHeader>
+        <DialogContent className="rounded-3xl max-w-[90%] sm:max-w-md max-h-[85vh] flex flex-col">
+          <DialogHeader className="flex-shrink-0">
             <DialogTitle>Add New Item</DialogTitle>
             <DialogDescription>Add a new product to your inventory</DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-4 py-4">
+          <form onSubmit={handleSubmit} className="space-y-4 py-4 overflow-y-auto flex-grow">
             <div className="space-y-2">
               <Label htmlFor="itemName">Item Name</Label>
               <Input 
@@ -298,13 +382,24 @@ const Inventory = () => {
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Tea & Snacks">Tea & Snacks</SelectItem>
-                  <SelectItem value="Groceries">Groceries</SelectItem>
-                  <SelectItem value="Others">Others</SelectItem>
+                  <SelectItem value="Inventory / Purchases">Inventory / Purchases</SelectItem>
+                  <SelectItem value="Rent & Utilities">Rent & Utilities</SelectItem>
+                  <SelectItem value="Packaging & Supplies">Packaging & Supplies</SelectItem>
+                  <SelectItem value="Transportation">Transportation</SelectItem>
+                  <SelectItem value="Maintenance & Cleaning">Maintenance & Cleaning</SelectItem>
+                  <SelectItem value="Wages / Labor">Wages / Labor</SelectItem>
+                  <SelectItem value="Marketing & Advertising">Marketing & Advertising</SelectItem>
+                  <SelectItem value="Licenses & Fees">Licenses & Fees</SelectItem>
+                  <SelectItem value="Equipment & Tools">Equipment & Tools</SelectItem>
+                  <SelectItem value="Miscellaneous / Others">Miscellaneous / Others</SelectItem>
+                  <SelectItem value="Tea & Beverages Sales">Tea & Beverages Sales</SelectItem>
+                  <SelectItem value="Snacks Sales">Snacks Sales</SelectItem>
+                  <SelectItem value="Grocery Sales">Grocery Sales</SelectItem>
+                  <SelectItem value="Special / Seasonal Items">Special / Seasonal Items</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="quantity">Quantity</Label>
                 <Input
@@ -329,7 +424,7 @@ const Inventory = () => {
                 />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="purchase">Purchase Price</Label>
                 <Input
@@ -382,12 +477,12 @@ const Inventory = () => {
 
       {/* Edit Item Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="rounded-3xl max-w-[90%]">
-          <DialogHeader>
+        <DialogContent className="rounded-3xl max-w-[90%] sm:max-w-md max-h-[85vh] flex flex-col">
+          <DialogHeader className="flex-shrink-0">
             <DialogTitle>Edit Item</DialogTitle>
             <DialogDescription>Update product information</DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleEditSubmit} className="space-y-4 py-4">
+          <form onSubmit={handleEditSubmit} className="space-y-4 py-4 overflow-y-auto flex-grow">
             <div className="space-y-2">
               <Label htmlFor="editItemName">Item Name</Label>
               <Input 
@@ -409,13 +504,24 @@ const Inventory = () => {
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Tea & Snacks">Tea & Snacks</SelectItem>
-                  <SelectItem value="Groceries">Groceries</SelectItem>
-                  <SelectItem value="Others">Others</SelectItem>
+                  <SelectItem value="Inventory / Purchases">Inventory / Purchases</SelectItem>
+                  <SelectItem value="Rent & Utilities">Rent & Utilities</SelectItem>
+                  <SelectItem value="Packaging & Supplies">Packaging & Supplies</SelectItem>
+                  <SelectItem value="Transportation">Transportation</SelectItem>
+                  <SelectItem value="Maintenance & Cleaning">Maintenance & Cleaning</SelectItem>
+                  <SelectItem value="Wages / Labor">Wages / Labor</SelectItem>
+                  <SelectItem value="Marketing & Advertising">Marketing & Advertising</SelectItem>
+                  <SelectItem value="Licenses & Fees">Licenses & Fees</SelectItem>
+                  <SelectItem value="Equipment & Tools">Equipment & Tools</SelectItem>
+                  <SelectItem value="Miscellaneous / Others">Miscellaneous / Others</SelectItem>
+                  <SelectItem value="Tea & Beverages Sales">Tea & Beverages Sales</SelectItem>
+                  <SelectItem value="Snacks Sales">Snacks Sales</SelectItem>
+                  <SelectItem value="Grocery Sales">Grocery Sales</SelectItem>
+                  <SelectItem value="Special / Seasonal Items">Special / Seasonal Items</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="editQuantity">Quantity</Label>
                 <Input
@@ -440,7 +546,7 @@ const Inventory = () => {
                 />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="editPurchase">Purchase Price</Label>
                 <Input
