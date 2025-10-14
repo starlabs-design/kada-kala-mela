@@ -8,6 +8,7 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "0.0.0.0",
     port: 5000,
+    allowedHosts: ["localhost", "127.0.0.1", "0.0.0.0", "5667e92a-6edf-4e0f-8ec5-9a71936af8c4-00-35sa0piqsfv8m.kirk.replit.dev"],
   },
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
   resolve: {
@@ -15,5 +16,4 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
-  
 }));
