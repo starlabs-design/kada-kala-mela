@@ -149,35 +149,35 @@ async function seedTestData() {
     const today = new Date().toISOString().split('T')[0];
     const expenses = [
       {
-        type: "expense",
+        type: "expense" as const,
         category: "Bills & Utilities",
         amount: 3500,
         date: today,
         notes: "Monthly electricity bill",
       },
       {
-        type: "expense",
+        type: "expense" as const,
         category: "Rent",
         amount: 15000,
         date: today,
         notes: "Shop rent for the month",
       },
       {
-        type: "expense",
+        type: "expense" as const,
         category: "Inventory Purchase",
         amount: 12000,
         date: today,
         notes: "Stock purchase from Lakshmi Rice Mill",
       },
       {
-        type: "expense",
+        type: "expense" as const,
         category: "Salaries",
         amount: 8000,
         date: today,
         notes: "Employee salary payment",
       },
       {
-        type: "expense",
+        type: "expense" as const,
         category: "Maintenance",
         amount: 2500,
         date: today,
@@ -201,35 +201,35 @@ async function seedTestData() {
     console.log("5️⃣ Adding income transactions...");
     const income = [
       {
-        type: "income",
+        type: "income" as const,
         category: "Sales",
         amount: 5000,
         date: today,
         notes: "Daily sales - Day 1",
       },
       {
-        type: "income",
+        type: "income" as const,
         category: "Sales",
         amount: 6500,
         date: today,
         notes: "Daily sales - Day 2",
       },
       {
-        type: "income",
+        type: "income" as const,
         category: "Sales",
         amount: 4200,
         date: today,
         notes: "Daily sales - Day 3",
       },
       {
-        type: "income",
+        type: "income" as const,
         category: "Sales",
         amount: 7800,
         date: today,
         notes: "Daily sales - Day 4",
       },
       {
-        type: "income",
+        type: "income" as const,
         category: "Sales",
         amount: 5500,
         date: today,

@@ -101,11 +101,14 @@ router.get("/api/transactions", async (_req: Request, res: Response) => {
 
 router.post("/api/transactions", async (req: Request, res: Response) => {
   try {
+    console.log("Transaction POST request body:", JSON.stringify(req.body, null, 2));
     const data = insertTransactionSchema.parse(req.body);
+    console.log("Parsed transaction data:", JSON.stringify(data, null, 2));
     const transaction = await storage.createTransaction(data);
     res.json(transaction);
   } catch (error) {
-    res.status(400).json({ error: "Invalid data" });
+    console.error("Transaction validation error:", error);
+    res.status(400).json({ error: "Invalid data", details: error instanceof Error ? error.message : String(error) });
   }
 });
 

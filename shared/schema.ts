@@ -54,8 +54,6 @@ export const transactions = pgTable("transactions", {
 export const insertTransactionSchema = createInsertSchema(transactions).omit({
   id: true,
   createdAt: true,
-}).extend({
-  type: z.enum(["income", "expense"]),
 });
 
 export type InsertTransaction = z.infer<typeof insertTransactionSchema>;
