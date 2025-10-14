@@ -15,7 +15,8 @@ export const inventoryItems = pgTable("inventory_items", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-export const insertInventoryItemSchema = createInsertSchema(inventoryItems).omit({
+const baseInventorySchema = createInsertSchema(inventoryItems);
+export const insertInventoryItemSchema = baseInventorySchema.omit({
   id: true,
   createdAt: true,
 });
@@ -33,7 +34,8 @@ export const sellers = pgTable("sellers", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-export const insertSellerSchema = createInsertSchema(sellers).omit({
+const baseSellerSchema = createInsertSchema(sellers);
+export const insertSellerSchema = baseSellerSchema.omit({
   id: true,
   createdAt: true,
 });
@@ -51,7 +53,8 @@ export const transactions = pgTable("transactions", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-export const insertTransactionSchema = createInsertSchema(transactions).omit({
+const baseTransactionSchema = createInsertSchema(transactions);
+export const insertTransactionSchema = baseTransactionSchema.omit({
   id: true,
   createdAt: true,
 });
@@ -74,7 +77,8 @@ export const settings = pgTable("settings", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-export const insertSettingsSchema = createInsertSchema(settings).omit({
+const baseSettingsSchema = createInsertSchema(settings);
+export const insertSettingsSchema = baseSettingsSchema.omit({
   id: true,
   updatedAt: true,
 });
