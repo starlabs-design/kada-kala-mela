@@ -1,19 +1,118 @@
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Store, User, Globe, Moon, Database, LogOut } from "lucide-react";
+import { Store, Moon, Database, Download } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { settingsAPI, inventoryAPI, transactionsAPI, sellersAPI } from "@/lib/api";
+import { toast } from "sonner";
+import { useTheme } from "next-themes";
 import BottomNav from "@/components/BottomNav";
 
 const Settings = () => {
+  const queryClient = useQueryClient();
+  const { theme, setTheme } = useTheme();
+  const [shopName, setShopName] = useState("");
+  const [ownerName, setOwnerName] = useState("");
+  const [shopPhone, setShopPhone] = useState("");
+
+  const { data: settings, isLoading } = useQuery({
+    queryKey: ["settings"],
+    queryFn: settingsAPI.get,
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: settingsAPI.update,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["settings"] });
+      toast.success("Settings saved successfully!");
+    },
+    onError: () => {
+      toast.error("Failed to save settings");
+    },
+  });
+
+  useEffect(() => {
+    if (settings) {
+      setShopName(settings.shopName || "");
+      setOwnerName(settings.ownerName || "");
+      setShopPhone(settings.shopPhone || "");
+      
+      if (settings.darkMode !== undefined) {
+        setTheme(settings.darkMode ? "dark" : "light");
+      }
+    }
+  }, [settings, setTheme]);
+
+  const handleSave = () => {
+    updateMutation.mutate({
+      shopName: shopName || undefined,
+      ownerName: ownerName || undefined,
+      shopPhone: shopPhone || undefined,
+    } as any);
+  };
+
+  const handleDarkModeToggle = (checked: boolean) => {
+    setTheme(checked ? "dark" : "light");
+    updateMutation.mutate({ darkMode: checked } as any);
+  };
+
+  const handleBackupData = async () => {
+    try {
+      toast.info("Preparing backup...");
+      
+      const [inventory, transactions, sellers, currentSettings] = await Promise.all([
+        inventoryAPI.getAll(),
+        transactionsAPI.getAll(),
+        sellersAPI.getAll(),
+        settingsAPI.get(),
+      ]);
+
+      const backupData = {
+        version: "1.0.0",
+        exportDate: new Date().toISOString(),
+        data: {
+          inventory,
+          transactions,
+          sellers,
+          settings: currentSettings,
+        },
+      };
+
+      const dataStr = JSON.stringify(backupData, null, 2);
+      const dataBlob = new Blob([dataStr], { type: "application/json" });
+      const url = URL.createObjectURL(dataBlob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `kada-backup-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      toast.success("Backup downloaded successfully!");
+    } catch (error) {
+      toast.error("Failed to create backup");
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background pb-24">
+        <div className="bg-primary text-primary-foreground px-6 py-6 rounded-b-3xl shadow-lg">
+          <h1 className="text-2xl font-bold">Settings</h1>
+          <p className="text-primary-foreground/90 text-sm">ക്രമീകരണങ്ങൾ</p>
+        </div>
+        <div className="px-4 py-6 flex items-center justify-center">
+          <p className="text-muted-foreground">Loading settings...</p>
+        </div>
+        <BottomNav />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background pb-24">
       {/* Header */}
@@ -34,26 +133,39 @@ const Settings = () => {
               <Label htmlFor="shopName">Shop Name</Label>
               <Input
                 id="shopName"
-                defaultValue="My Kerala Store"
+                value={shopName}
+                onChange={(e) => setShopName(e.target.value)}
                 className="rounded-xl"
+                placeholder="Enter shop name"
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="ownerName">Owner Name</Label>
               <Input
                 id="ownerName"
-                defaultValue="Raju Kumar"
+                value={ownerName}
+                onChange={(e) => setOwnerName(e.target.value)}
                 className="rounded-xl"
+                placeholder="Enter owner name"
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="shopPhone">Phone Number</Label>
               <Input
                 id="shopPhone"
-                defaultValue="+91 9876543210"
+                value={shopPhone}
+                onChange={(e) => setShopPhone(e.target.value)}
                 className="rounded-xl"
+                placeholder="+91 XXXXXXXXXX"
               />
             </div>
+            <Button 
+              onClick={handleSave} 
+              className="w-full rounded-xl"
+              disabled={updateMutation.isPending}
+            >
+              {updateMutation.isPending ? "Saving..." : "Save Changes"}
+            </Button>
           </CardContent>
         </Card>
 
@@ -61,20 +173,8 @@ const Settings = () => {
         <Card className="bg-card shadow-md border-0">
           <CardContent className="pt-6 space-y-4">
             <div className="flex items-center gap-3 mb-4">
-              <Globe className="h-5 w-5 text-primary" />
+              <Moon className="h-5 w-5 text-primary" />
               <h2 className="font-semibold text-lg">Preferences</h2>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="language">Language / ഭാഷ</Label>
-              <Select defaultValue="en">
-                <SelectTrigger className="rounded-xl">
-                  <SelectValue placeholder="Select language" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="en">English</SelectItem>
-                  <SelectItem value="ml">മലയാളം (Malayalam)</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
             <div className="flex items-center justify-between py-2">
               <div className="flex items-center gap-3">
@@ -86,7 +186,11 @@ const Settings = () => {
                   </p>
                 </div>
               </div>
-              <Switch id="darkMode" />
+              <Switch 
+                id="darkMode" 
+                checked={theme === "dark"}
+                onCheckedChange={handleDarkModeToggle}
+              />
             </div>
           </CardContent>
         </Card>
@@ -99,28 +203,19 @@ const Settings = () => {
               <h2 className="font-semibold text-lg">Data Backup</h2>
             </div>
             <p className="text-sm text-muted-foreground">
-              Last backup: Never
+              Backup your shop data to keep it safe
             </p>
-            <Button variant="outline" className="w-full rounded-xl">
-              Backup to Google Drive
+            <Button 
+              variant="outline" 
+              className="w-full rounded-xl gap-2"
+              onClick={handleBackupData}
+            >
+              <Download className="h-4 w-4" />
+              Download Backup
             </Button>
-            <Button variant="outline" className="w-full rounded-xl">
-              Export to Device
-            </Button>
-          </CardContent>
-        </Card>
-
-        {/* Account */}
-        <Card className="bg-card shadow-md border-0">
-          <CardContent className="pt-6 space-y-4">
-            <div className="flex items-center gap-3 mb-4">
-              <User className="h-5 w-5 text-primary" />
-              <h2 className="font-semibold text-lg">Account</h2>
-            </div>
-            <Button variant="destructive" className="w-full rounded-xl gap-2">
-              <LogOut className="h-5 w-5" />
-              Logout
-            </Button>
+            <p className="text-xs text-muted-foreground text-center">
+              Download a complete backup of all your shop data as JSON
+            </p>
           </CardContent>
         </Card>
 
