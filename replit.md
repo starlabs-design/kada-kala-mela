@@ -4,6 +4,14 @@
 
 Kada Manager is a mobile-first inventory and expense management application designed specifically for Kerala shopkeepers. The application provides simple, bilingual (English/Malayalam) interfaces for managing shop inventory, tracking expenses and income, maintaining seller contacts, and generating reports. Built with a modern React + TypeScript stack, it features a clean, accessible UI optimized for mobile devices with bottom navigation.
 
+## Recent Changes
+
+**October 14, 2025:**
+- Fixed dark mode functionality by adding ThemeProvider from next-themes to App.tsx
+- Dark mode now properly syncs with database settings and persists across sessions
+- Implemented working data backup feature that exports all shop data (inventory, transactions, sellers, settings) as downloadable JSON file with timestamp
+- Simplified backup UI to single "Download Backup" button for easy local export
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
@@ -28,7 +36,8 @@ Preferred communication style: Simple, everyday language.
 **State Management:**
 - TanStack Query (React Query) for server state management and caching
 - React Hook Form with Zod validation for form handling
-- Context API for theme and toast notifications
+- next-themes ThemeProvider for dark mode management with persistence
+- Context API for toast notifications
 
 **Key Design Patterns:**
 - Component composition with UI primitives (Card, Dialog, Form, etc.)
@@ -103,6 +112,7 @@ Preferred communication style: Simple, everyday language.
 - zod - Schema validation library
 - react-hook-form - Form state management
 - sonner - Toast notification system
+- next-themes - Theme management with localStorage persistence
 
 **Development Tools:**
 - TypeScript ESLint for code linting

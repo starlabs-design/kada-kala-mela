@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Store, Moon, Database, Download } from "lucide-react";
+import { Store, Moon, Database, Download, Upload } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { settingsAPI, inventoryAPI, transactionsAPI, sellersAPI } from "@/lib/api";
 import { toast } from "sonner";
@@ -14,9 +14,11 @@ import BottomNav from "@/components/BottomNav";
 const Settings = () => {
   const queryClient = useQueryClient();
   const { theme, setTheme } = useTheme();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [shopName, setShopName] = useState("");
   const [ownerName, setOwnerName] = useState("");
   const [shopPhone, setShopPhone] = useState("");
+  const [isImporting, setIsImporting] = useState(false);
 
   const { data: settings, isLoading } = useQuery({
     queryKey: ["settings"],
@@ -95,6 +97,135 @@ const Settings = () => {
       toast.success("Backup downloaded successfully!");
     } catch (error) {
       toast.error("Failed to create backup");
+    }
+  };
+
+  const handleImportBackup = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsImporting(true);
+    try {
+      toast.info("Reading backup file...");
+      
+      const fileContent = await file.text();
+      const backupData = JSON.parse(fileContent);
+
+      if (!backupData.version || !backupData.data) {
+        throw new Error("Invalid backup file format");
+      }
+
+      toast.info("Importing data...");
+
+      const { inventory, transactions, sellers, settings: importSettings } = backupData.data;
+
+      let successCount = 0;
+      let errorCount = 0;
+
+      const sellerIdMap = new Map<number, number>();
+      const inventoryIdMap = new Map<number, number>();
+
+      if (sellers && Array.isArray(sellers)) {
+        for (const seller of sellers) {
+          try {
+            const oldId = seller.id;
+            const { id, createdAt, updatedAt, ...sellerData } = seller;
+            const newSeller = await sellersAPI.create(sellerData);
+            if (newSeller && newSeller.id && oldId) {
+              sellerIdMap.set(oldId, newSeller.id);
+            }
+            successCount++;
+          } catch (error) {
+            console.error("Failed to import seller:", error);
+            errorCount++;
+          }
+        }
+      }
+
+      if (inventory && Array.isArray(inventory)) {
+        for (const item of inventory) {
+          try {
+            const oldId = item.id;
+            const { id, createdAt, updatedAt, ...itemData } = item;
+            const newItem = await inventoryAPI.create(itemData);
+            if (newItem && newItem.id && oldId) {
+              inventoryIdMap.set(oldId, newItem.id);
+            }
+            successCount++;
+          } catch (error) {
+            console.error("Failed to import inventory item:", error);
+            errorCount++;
+          }
+        }
+      }
+
+      if (transactions && Array.isArray(transactions)) {
+        for (const transaction of transactions) {
+          try {
+            const { id, createdAt, updatedAt, sellerId, items, ...transactionData } = transaction;
+            
+            const newSellerId = sellerId ? sellerIdMap.get(sellerId) : undefined;
+            
+            const cleanedItems = items && Array.isArray(items) 
+              ? items.map((item: any) => {
+                  const { id, transactionId, inventoryItemId, createdAt, updatedAt, ...itemData } = item;
+                  return {
+                    ...itemData,
+                    inventoryItemId: inventoryItemId ? inventoryIdMap.get(inventoryItemId) : undefined,
+                  };
+                }).filter((item: any) => item.inventoryItemId !== undefined)
+              : [];
+
+            if (newSellerId || !sellerId) {
+              await transactionsAPI.create({
+                ...transactionData,
+                sellerId: newSellerId,
+                items: cleanedItems,
+              });
+              successCount++;
+            } else {
+              console.warn("Skipped transaction: seller not found");
+              errorCount++;
+            }
+          } catch (error) {
+            console.error("Failed to import transaction:", error);
+            errorCount++;
+          }
+        }
+      }
+
+      if (importSettings) {
+        try {
+          const { id, createdAt, updatedAt, ...cleanSettings } = importSettings;
+          await settingsAPI.update(cleanSettings as any);
+        } catch (error) {
+          console.error("Failed to import settings:", error);
+        }
+      }
+
+      queryClient.invalidateQueries();
+      
+      if (errorCount > 0) {
+        toast.warning(`Imported ${successCount} items with ${errorCount} skipped. Check console for details.`);
+      } else if (successCount > 0) {
+        toast.success(`Successfully imported ${successCount} items!`);
+      } else {
+        toast.error("No data was imported. Please check the backup file.");
+      }
+      
+      if (successCount > 0) {
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
+      }
+    } catch (error) {
+      console.error("Import error:", error);
+      toast.error("Failed to import backup. Please check the file format.");
+    } finally {
+      setIsImporting(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
     }
   };
 
@@ -203,18 +334,39 @@ const Settings = () => {
               <h2 className="font-semibold text-lg">Data Backup</h2>
             </div>
             <p className="text-sm text-muted-foreground">
-              Backup your shop data to keep it safe
+              Backup and restore your shop data
             </p>
-            <Button 
-              variant="outline" 
-              className="w-full rounded-xl gap-2"
-              onClick={handleBackupData}
-            >
-              <Download className="h-4 w-4" />
-              Download Backup
-            </Button>
+            
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".json"
+              onChange={handleImportBackup}
+              className="hidden"
+            />
+            
+            <div className="grid grid-cols-2 gap-3">
+              <Button 
+                variant="outline" 
+                className="rounded-xl gap-2"
+                onClick={handleBackupData}
+              >
+                <Download className="h-4 w-4" />
+                Download
+              </Button>
+              <Button 
+                variant="outline" 
+                className="rounded-xl gap-2"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isImporting}
+              >
+                <Upload className="h-4 w-4" />
+                {isImporting ? "Importing..." : "Upload"}
+              </Button>
+            </div>
+            
             <p className="text-xs text-muted-foreground text-center">
-              Download a complete backup of all your shop data as JSON
+              Download backup as JSON or upload a backup file to restore
             </p>
           </CardContent>
         </Card>
