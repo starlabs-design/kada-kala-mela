@@ -11,6 +11,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -20,53 +30,46 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, TrendingUp, TrendingDown } from "lucide-react";
+import { Plus, TrendingUp, TrendingDown, Trash2 } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { transactionsAPI } from "@/lib/api";
+import { toast } from "sonner";
 import BottomNav from "@/components/BottomNav";
-
-interface Transaction {
-  id: string;
-  type: "income" | "expense";
-  category: string;
-  amount: number;
-  date: string;
-  notes?: string;
-}
+import type { Transaction } from "@shared/schema";
 
 const Expenses = () => {
-  const [transactions] = useState<Transaction[]>([
-    {
-      id: "1",
-      type: "income",
-      category: "Tea & Snacks",
-      amount: 1200,
-      date: "2025-10-14",
-      notes: "Morning sales",
+  const queryClient = useQueryClient();
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [transactionToDelete, setTransactionToDelete] = useState<number | null>(null);
+
+  const { data: transactions = [] } = useQuery<Transaction[]>({
+    queryKey: ["transactions"],
+    queryFn: transactionsAPI.getAll,
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: number) => transactionsAPI.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["transactions"] });
+      toast.success("Transaction deleted successfully");
+      setDeleteDialogOpen(false);
+      setTransactionToDelete(null);
     },
-    {
-      id: "2",
-      type: "income",
-      category: "Groceries",
-      amount: 1250,
-      date: "2025-10-14",
-      notes: "Afternoon sales",
+    onError: () => {
+      toast.error("Failed to delete transaction");
     },
-    {
-      id: "3",
-      type: "expense",
-      category: "Purchase",
-      amount: 800,
-      date: "2025-10-14",
-      notes: "Stock from wholesale",
-    },
-    {
-      id: "4",
-      type: "expense",
-      category: "Electricity",
-      amount: 400,
-      date: "2025-10-14",
-      notes: "Monthly bill",
-    },
-  ]);
+  });
+
+  const handleDeleteClick = (id: number) => {
+    setTransactionToDelete(id);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (transactionToDelete !== null) {
+      deleteMutation.mutate(transactionToDelete);
+    }
+  };
 
   const totalIncome = transactions
     .filter((t) => t.type === "income")
@@ -124,8 +127,8 @@ const Expenses = () => {
             {transactions.map((transaction) => (
               <Card key={transaction.id} className="bg-card shadow-md border-0">
                 <CardContent className="pt-4">
-                  <div className="flex justify-between items-start">
-                    <div>
+                  <div className="flex justify-between items-start gap-3">
+                    <div className="flex-1">
                       <h3 className="font-semibold">{transaction.category}</h3>
                       <p className="text-sm text-muted-foreground">{transaction.notes}</p>
                       <p className="text-xs text-muted-foreground mt-1">
@@ -136,21 +139,31 @@ const Expenses = () => {
                         })}
                       </p>
                     </div>
-                    <div className="text-right">
-                      <p
-                        className={`text-xl font-bold ${
-                          transaction.type === "income" ? "text-success" : "text-destructive"
-                        }`}
+                    <div className="flex items-start gap-2">
+                      <div className="text-right">
+                        <p
+                          className={`text-xl font-bold ${
+                            transaction.type === "income" ? "text-success" : "text-destructive"
+                          }`}
+                        >
+                          {transaction.type === "income" ? "+" : "-"}₹
+                          {transaction.amount.toLocaleString('en-IN')}
+                        </p>
+                        <Badge
+                          variant={transaction.type === "income" ? "default" : "destructive"}
+                          className="rounded-full mt-1"
+                        >
+                          {transaction.type === "income" ? "Income" : "Expense"}
+                        </Badge>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                        onClick={() => handleDeleteClick(transaction.id)}
                       >
-                        {transaction.type === "income" ? "+" : "-"}₹
-                        {transaction.amount.toLocaleString('en-IN')}
-                      </p>
-                      <Badge
-                        variant={transaction.type === "income" ? "default" : "destructive"}
-                        className="rounded-full mt-1"
-                      >
-                        {transaction.type === "income" ? "Income" : "Expense"}
-                      </Badge>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
                   </div>
                 </CardContent>
@@ -164,17 +177,27 @@ const Expenses = () => {
               .map((transaction) => (
                 <Card key={transaction.id} className="bg-card shadow-md border-0">
                   <CardContent className="pt-4">
-                    <div className="flex justify-between items-start">
-                      <div>
+                    <div className="flex justify-between items-start gap-3">
+                      <div className="flex-1">
                         <h3 className="font-semibold">{transaction.category}</h3>
                         <p className="text-sm text-muted-foreground">{transaction.notes}</p>
                         <p className="text-xs text-muted-foreground mt-1">
                           {new Date(transaction.date).toLocaleDateString('en-IN')}
                         </p>
                       </div>
-                      <p className="text-xl font-bold text-success">
-                        +₹{transaction.amount.toLocaleString('en-IN')}
-                      </p>
+                      <div className="flex items-start gap-2">
+                        <p className="text-xl font-bold text-success">
+                          +₹{transaction.amount.toLocaleString('en-IN')}
+                        </p>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                          onClick={() => handleDeleteClick(transaction.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -187,17 +210,27 @@ const Expenses = () => {
               .map((transaction) => (
                 <Card key={transaction.id} className="bg-card shadow-md border-0">
                   <CardContent className="pt-4">
-                    <div className="flex justify-between items-start">
-                      <div>
+                    <div className="flex justify-between items-start gap-3">
+                      <div className="flex-1">
                         <h3 className="font-semibold">{transaction.category}</h3>
                         <p className="text-sm text-muted-foreground">{transaction.notes}</p>
                         <p className="text-xs text-muted-foreground mt-1">
                           {new Date(transaction.date).toLocaleDateString('en-IN')}
                         </p>
                       </div>
-                      <p className="text-xl font-bold text-destructive">
-                        -₹{transaction.amount.toLocaleString('en-IN')}
-                      </p>
+                      <div className="flex items-start gap-2">
+                        <p className="text-xl font-bold text-destructive">
+                          -₹{transaction.amount.toLocaleString('en-IN')}
+                        </p>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                          onClick={() => handleDeleteClick(transaction.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -267,6 +300,27 @@ const Expenses = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent className="rounded-3xl max-w-[90%]">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Transaction</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this transaction? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-xl">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="rounded-xl bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={handleDeleteConfirm}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <BottomNav />
     </div>
