@@ -412,14 +412,14 @@ const Expenses = () => {
       </Button>
 
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-        <DialogContent className="rounded-3xl max-w-[90%] sm:max-w-md">
-          <DialogHeader>
+        <DialogContent className="rounded-3xl max-w-[90%] sm:max-w-md max-h-[85vh] flex flex-col">
+          <DialogHeader className="flex-shrink-0">
             <DialogTitle>{editMode ? "Edit Transaction" : "Add Transaction"}</DialogTitle>
             <DialogDescription>
               {editMode ? "Update transaction details" : "Record income or expense"}
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={(e) => { e.preventDefault(); handleSaveTransaction(); }} className="space-y-4 py-4">
+          <form onSubmit={(e) => { e.preventDefault(); handleSaveTransaction(); }} className="space-y-4 py-4 overflow-y-auto flex-grow">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="type">Type</Label>
@@ -502,7 +502,7 @@ const Expenses = () => {
               />
             </div>
           </form>
-          <DialogFooter className="flex-col sm:flex-row gap-2">
+          <DialogFooter className="flex-shrink-0 flex-col sm:flex-row gap-2">
             <Button
               type="button"
               variant="outline"
