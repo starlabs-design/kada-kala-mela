@@ -286,14 +286,25 @@ const Inventory = () => {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="unit">Unit</Label>
-                  <Input 
-                    id="unit" 
-                    placeholder="kg, pack, etc" 
-                    className="rounded-xl"
-                    value={newItem.unit}
-                    onChange={(e) => setNewItem({ ...newItem, unit: e.target.value })}
+                  <Select 
+                    value={newItem.unit} 
+                    onValueChange={(value) => setNewItem({ ...newItem, unit: value })}
                     required
-                  />
+                  >
+                    <SelectTrigger className="rounded-xl">
+                      <SelectValue placeholder="Select unit" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="kg">Kg</SelectItem>
+                      <SelectItem value="liters">Liters</SelectItem>
+                      <SelectItem value="pack">Pack</SelectItem>
+                      <SelectItem value="pieces">Pieces</SelectItem>
+                      <SelectItem value="box">Box</SelectItem>
+                      <SelectItem value="bottle">Bottle</SelectItem>
+                      <SelectItem value="tin">Tin</SelectItem>
+                      <SelectItem value="bag">Bag</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
@@ -385,14 +396,24 @@ const Inventory = () => {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="editUnit">Unit</Label>
-                  <Input 
-                    id="editUnit" 
-                    placeholder="kg, pack, etc" 
-                    className="rounded-xl"
-                    value={editingItem?.unit || ""}
-                    onChange={(e) => setEditingItem(editingItem ? { ...editingItem, unit: e.target.value } : null)}
-                    required
-                  />
+                  <Select 
+                    value={editingItem?.unit || ""} 
+                    onValueChange={(value) => setEditingItem(editingItem ? { ...editingItem, unit: value } : null)}
+                  >
+                    <SelectTrigger className="rounded-xl">
+                      <SelectValue placeholder="Select unit" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="kg">Kg</SelectItem>
+                      <SelectItem value="liters">Liters</SelectItem>
+                      <SelectItem value="pack">Pack</SelectItem>
+                      <SelectItem value="pieces">Pieces</SelectItem>
+                      <SelectItem value="box">Box</SelectItem>
+                      <SelectItem value="bottle">Bottle</SelectItem>
+                      <SelectItem value="tin">Tin</SelectItem>
+                      <SelectItem value="bag">Bag</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
