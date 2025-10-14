@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Store, Moon, Database, Download, Upload } from "lucide-react";
+import { Store, Moon, Database, Download, Upload, AlertTriangle } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { settingsAPI, inventoryAPI, transactionsAPI, sellersAPI } from "@/lib/api";
 import { toast } from "sonner";
@@ -18,6 +18,11 @@ const Settings = () => {
   const [shopName, setShopName] = useState("");
   const [ownerName, setOwnerName] = useState("");
   const [shopPhone, setShopPhone] = useState("");
+  const [lowStockLimitKg, setLowStockLimitKg] = useState(10);
+  const [lowStockLimitLiters, setLowStockLimitLiters] = useState(10);
+  const [lowStockLimitPack, setLowStockLimitPack] = useState(10);
+  const [lowStockLimitPieces, setLowStockLimitPieces] = useState(10);
+  const [lowStockLimitDefault, setLowStockLimitDefault] = useState(10);
   const [isImporting, setIsImporting] = useState(false);
 
   const { data: settings, isLoading } = useQuery({
@@ -41,6 +46,11 @@ const Settings = () => {
       setShopName(settings.shopName || "");
       setOwnerName(settings.ownerName || "");
       setShopPhone(settings.shopPhone || "");
+      setLowStockLimitKg(settings.lowStockLimitKg || 10);
+      setLowStockLimitLiters(settings.lowStockLimitLiters || 10);
+      setLowStockLimitPack(settings.lowStockLimitPack || 10);
+      setLowStockLimitPieces(settings.lowStockLimitPieces || 10);
+      setLowStockLimitDefault(settings.lowStockLimitDefault || 10);
       
       if (settings.darkMode !== undefined) {
         setTheme(settings.darkMode ? "dark" : "light");
@@ -53,6 +63,11 @@ const Settings = () => {
       shopName: shopName || undefined,
       ownerName: ownerName || undefined,
       shopPhone: shopPhone || undefined,
+      lowStockLimitKg: lowStockLimitKg,
+      lowStockLimitLiters: lowStockLimitLiters,
+      lowStockLimitPack: lowStockLimitPack,
+      lowStockLimitPieces: lowStockLimitPieces,
+      lowStockLimitDefault: lowStockLimitDefault,
     } as any);
   };
 
@@ -323,6 +338,86 @@ const Settings = () => {
                 onCheckedChange={handleDarkModeToggle}
               />
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Low Stock Alert Settings */}
+        <Card className="bg-card shadow-md border-0">
+          <CardContent className="pt-6 space-y-4">
+            <div className="flex items-center gap-3 mb-4">
+              <AlertTriangle className="h-5 w-5 text-primary" />
+              <h2 className="font-semibold text-lg">Low Stock Alert Settings</h2>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Set minimum quantity thresholds for different unit types
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label htmlFor="lowStockKg">Kg Limit</Label>
+                <Input
+                  id="lowStockKg"
+                  type="number"
+                  value={lowStockLimitKg}
+                  onChange={(e) => setLowStockLimitKg(Number(e.target.value))}
+                  className="rounded-xl"
+                  min="0"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="lowStockLiters">Liters Limit</Label>
+                <Input
+                  id="lowStockLiters"
+                  type="number"
+                  value={lowStockLimitLiters}
+                  onChange={(e) => setLowStockLimitLiters(Number(e.target.value))}
+                  className="rounded-xl"
+                  min="0"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="lowStockPack">Pack Limit</Label>
+                <Input
+                  id="lowStockPack"
+                  type="number"
+                  value={lowStockLimitPack}
+                  onChange={(e) => setLowStockLimitPack(Number(e.target.value))}
+                  className="rounded-xl"
+                  min="0"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="lowStockPieces">Pieces Limit</Label>
+                <Input
+                  id="lowStockPieces"
+                  type="number"
+                  value={lowStockLimitPieces}
+                  onChange={(e) => setLowStockLimitPieces(Number(e.target.value))}
+                  className="rounded-xl"
+                  min="0"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="lowStockDefault">Default Limit (Other Units)</Label>
+              <Input
+                id="lowStockDefault"
+                type="number"
+                value={lowStockLimitDefault}
+                onChange={(e) => setLowStockLimitDefault(Number(e.target.value))}
+                className="rounded-xl"
+                min="0"
+              />
+              <p className="text-xs text-muted-foreground">
+                Used for units not listed above
+              </p>
+            </div>
+            <Button 
+              onClick={handleSave} 
+              className="w-full rounded-xl"
+              disabled={updateMutation.isPending}
+            >
+              {updateMutation.isPending ? "Saving..." : "Save Alert Settings"}
+            </Button>
           </CardContent>
         </Card>
 

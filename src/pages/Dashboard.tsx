@@ -13,7 +13,8 @@ import {
   DollarSign,
   Settings as SettingsIcon
 } from "lucide-react";
-import { inventoryAPI, transactionsAPI } from "@/lib/api";
+import { inventoryAPI, transactionsAPI, settingsAPI } from "@/lib/api";
+import { isLowStock } from "@/lib/utils";
 
 const Dashboard = () => {
   const { data: inventory = [] } = useQuery({
@@ -24,6 +25,11 @@ const Dashboard = () => {
   const { data: transactions = [] } = useQuery({
     queryKey: ["transactions"],
     queryFn: transactionsAPI.getAll,
+  });
+
+  const { data: settings } = useQuery({
+    queryKey: ["settings"],
+    queryFn: settingsAPI.get,
   });
 
   const today = new Date().toISOString().split('T')[0];
@@ -39,7 +45,7 @@ const Dashboard = () => {
   
   const profit = todaySales - todayExpenses;
 
-  const lowStockItems = inventory.filter(item => item.lowStockAlert || item.quantity < 10);
+  const lowStockItems = inventory.filter(item => isLowStock(item.quantity, item.unit, settings));
   const lowStockCount = lowStockItems.length;
 
   // Calculate category-based income data

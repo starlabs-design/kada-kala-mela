@@ -22,8 +22,9 @@ import {
 } from "@/components/ui/select";
 import { Plus, Search, AlertCircle, Package, Pencil, Trash2 } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
-import { inventoryAPI, sellersAPI } from "@/lib/api";
+import { inventoryAPI, sellersAPI, settingsAPI } from "@/lib/api";
 import { toast } from "sonner";
+import { isLowStock } from "@/lib/utils";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -62,6 +63,11 @@ const Inventory = () => {
   const { data: sellers = [] } = useQuery({
     queryKey: ["sellers"],
     queryFn: sellersAPI.getAll,
+  });
+
+  const { data: settings } = useQuery({
+    queryKey: ["settings"],
+    queryFn: settingsAPI.get,
   });
 
   const createMutation = useMutation({
@@ -198,7 +204,7 @@ const Inventory = () => {
                       <Badge variant="outline" className="rounded-full">
                         Rs. {item.sellingPrice}/{item.unit}
                       </Badge>
-                      {item.lowStockAlert && (
+                      {isLowStock(item.quantity, item.unit, settings) && (
                         <Badge variant="destructive" className="rounded-full gap-1">
                           <AlertCircle className="h-3 w-3" />
                           Low Stock
