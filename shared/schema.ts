@@ -66,6 +66,11 @@ export const settings = pgTable("settings", {
   shopPhone: varchar("shop_phone", { length: 20 }),
   language: varchar("language", { length: 10 }).default("en"),
   darkMode: boolean("dark_mode").default(false),
+  lowStockLimitKg: integer("low_stock_limit_kg").default(10),
+  lowStockLimitLiters: integer("low_stock_limit_liters").default(10),
+  lowStockLimitPack: integer("low_stock_limit_pack").default(10),
+  lowStockLimitPieces: integer("low_stock_limit_pieces").default(10),
+  lowStockLimitDefault: integer("low_stock_limit_default").default(10),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
