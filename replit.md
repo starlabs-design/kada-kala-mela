@@ -9,8 +9,12 @@ Kada Manager is a mobile-first inventory and expense management application desi
 **October 14, 2025:**
 - Fixed dark mode functionality by adding ThemeProvider from next-themes to App.tsx
 - Dark mode now properly syncs with database settings and persists across sessions
-- Implemented working data backup feature that exports all shop data (inventory, transactions, sellers, settings) as downloadable JSON file with timestamp
-- Simplified backup UI to single "Download Backup" button for easy local export
+- Implemented complete backup/restore system:
+  - Download Backup: Exports all shop data (inventory, transactions, sellers, settings) as timestamped JSON file
+  - Upload Backup: Imports backup files with intelligent ID mapping to preserve relational integrity
+  - Deep sanitization removes read-only fields before import
+  - Per-entity error handling with detailed feedback
+  - Automatic ID remapping ensures transaction references remain valid after import
 
 ## User Preferences
 
