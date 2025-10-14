@@ -196,7 +196,7 @@ const Inventory = () => {
                     )}
                     <div className="flex gap-2 mt-2">
                       <Badge variant="outline" className="rounded-full">
-                        ₹{item.sellingPrice}/{item.unit}
+                        Rs. {item.sellingPrice}/{item.unit}
                       </Badge>
                       {item.lowStockAlert && (
                         <Badge variant="destructive" className="rounded-full gap-1">
