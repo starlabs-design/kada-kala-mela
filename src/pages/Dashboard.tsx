@@ -1,7 +1,6 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { 
   Package, 
   TrendingUp, 
@@ -12,11 +11,34 @@ import {
   Coffee,
   AlertCircle
 } from "lucide-react";
+import { inventoryAPI, transactionsAPI } from "@/lib/api";
 
 const Dashboard = () => {
-  const [todaySales] = useState(2450);
-  const [todayExpenses] = useState(1200);
+  const { data: inventory = [] } = useQuery({
+    queryKey: ["inventory"],
+    queryFn: inventoryAPI.getAll,
+  });
+
+  const { data: transactions = [] } = useQuery({
+    queryKey: ["transactions"],
+    queryFn: transactionsAPI.getAll,
+  });
+
+  const today = new Date().toISOString().split('T')[0];
+  const todayTransactions = transactions.filter(t => t.date === today);
+  
+  const todaySales = todayTransactions
+    .filter(t => t.type === "income")
+    .reduce((sum, t) => sum + t.amount, 0);
+  
+  const todayExpenses = todayTransactions
+    .filter(t => t.type === "expense")
+    .reduce((sum, t) => sum + t.amount, 0);
+  
   const profit = todaySales - todayExpenses;
+
+  const lowStockItems = inventory.filter(item => item.lowStockAlert || item.quantity < 10);
+  const lowStockCount = lowStockItems.length;
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -86,17 +108,19 @@ const Dashboard = () => {
         </div>
 
         {/* Low Stock Alert */}
-        <Card className="bg-warning/10 border-warning/20 shadow-lg">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <AlertCircle className="h-6 w-6 text-warning" />
-              <div>
-                <p className="font-semibold text-warning">Low Stock Alert</p>
-                <p className="text-sm text-muted-foreground">3 items need reorder</p>
+        {lowStockCount > 0 && (
+          <Card className="bg-warning/10 border-warning/20 shadow-lg">
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-3">
+                <AlertCircle className="h-6 w-6 text-warning" />
+                <div>
+                  <p className="font-semibold text-warning">Low Stock Alert</p>
+                  <p className="text-sm text-muted-foreground">{lowStockCount} items need reorder</p>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {/* Quick Actions */}
