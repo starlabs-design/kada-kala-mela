@@ -20,10 +20,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Search, AlertCircle, Package } from "lucide-react";
+import { Plus, Search, AlertCircle, Package, Pencil, Trash2 } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
 import { inventoryAPI } from "@/lib/api";
 import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface InventoryFormData {
   name: string;
@@ -39,6 +49,9 @@ const Inventory = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [deletingItemId, setDeletingItemId] = useState<number | null>(null);
+  const [editingItem, setEditingItem] = useState<InventoryFormData & { id: number } | null>(null);
   const queryClient = useQueryClient();
 
   const { data: items = [] } = useQuery({
@@ -58,6 +71,32 @@ const Inventory = () => {
     },
   });
 
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: number; data: Partial<InventoryFormData> }) =>
+      inventoryAPI.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["inventory"] });
+      setIsEditDialogOpen(false);
+      setEditingItem(null);
+      toast.success("Item updated successfully!");
+    },
+    onError: () => {
+      toast.error("Failed to update item");
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: inventoryAPI.delete,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["inventory"] });
+      setDeletingItemId(null);
+      toast.success("Item deleted successfully!");
+    },
+    onError: () => {
+      toast.error("Failed to delete item");
+    },
+  });
+
   const [newItem, setNewItem] = useState<InventoryFormData>({
     name: "",
     category: "",
@@ -71,6 +110,38 @@ const Inventory = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     createMutation.mutate(newItem as any);
+  };
+
+  const handleEditSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (editingItem) {
+      const { id, ...data } = editingItem;
+      updateMutation.mutate({ id, data });
+    }
+  };
+
+  const handleEdit = (item: any) => {
+    setEditingItem({
+      id: item.id,
+      name: item.name,
+      category: item.category,
+      quantity: item.quantity,
+      unit: item.unit,
+      purchasePrice: item.purchasePrice,
+      sellingPrice: item.sellingPrice,
+      lowStockAlert: item.lowStockAlert,
+    });
+    setIsEditDialogOpen(true);
+  };
+
+  const handleDelete = (id: number) => {
+    setDeletingItemId(id);
+  };
+
+  const confirmDelete = () => {
+    if (deletingItemId) {
+      deleteMutation.mutate(deletingItemId);
+    }
   };
 
   const filteredItems = items.filter((item) => {
@@ -130,11 +201,11 @@ const Inventory = () => {
           <Card key={item.id} className="bg-card shadow-md border-0">
             <CardContent className="pt-4">
               <div className="flex justify-between items-start">
-                <div className="flex gap-3">
+                <div className="flex gap-3 flex-1">
                   <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
                     <Package className="h-6 w-6 text-primary" />
                   </div>
-                  <div>
+                  <div className="flex-1">
                     <h3 className="font-semibold">{item.name}</h3>
                     <p className="text-sm text-muted-foreground">{item.category}</p>
                     <div className="flex gap-2 mt-2">
@@ -150,9 +221,29 @@ const Inventory = () => {
                     </div>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-2xl font-bold">{item.quantity}</p>
-                  <p className="text-xs text-muted-foreground">{item.unit}</p>
+                <div className="flex items-start gap-2">
+                  <div className="text-right mr-2">
+                    <p className="text-2xl font-bold">{item.quantity}</p>
+                    <p className="text-xs text-muted-foreground">{item.unit}</p>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => handleEdit(item)}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-destructive hover:text-destructive"
+                      onClick={() => handleDelete(item.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               </div>
             </CardContent>
@@ -257,6 +348,121 @@ const Inventory = () => {
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Edit Item Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="rounded-3xl max-w-[90%]">
+          <DialogHeader>
+            <DialogTitle>Edit Item</DialogTitle>
+            <DialogDescription>Update product information</DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleEditSubmit} className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="editItemName">Item Name</Label>
+              <Input 
+                id="editItemName" 
+                placeholder="Enter item name" 
+                className="rounded-xl"
+                value={editingItem?.name || ""}
+                onChange={(e) => setEditingItem(editingItem ? { ...editingItem, name: e.target.value } : null)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="editCategory">Category</Label>
+              <Select 
+                value={editingItem?.category || ""} 
+                onValueChange={(value) => setEditingItem(editingItem ? { ...editingItem, category: value } : null)}
+              >
+                <SelectTrigger className="rounded-xl">
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Tea & Snacks">Tea & Snacks</SelectItem>
+                  <SelectItem value="Groceries">Groceries</SelectItem>
+                  <SelectItem value="Others">Others</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="editQuantity">Quantity</Label>
+                <Input
+                  id="editQuantity"
+                  type="number"
+                  placeholder="0"
+                  className="rounded-xl"
+                  value={editingItem?.quantity || ""}
+                  onChange={(e) => setEditingItem(editingItem ? { ...editingItem, quantity: Number(e.target.value) } : null)}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="editUnit">Unit</Label>
+                <Input 
+                  id="editUnit" 
+                  placeholder="kg, pack, etc" 
+                  className="rounded-xl"
+                  value={editingItem?.unit || ""}
+                  onChange={(e) => setEditingItem(editingItem ? { ...editingItem, unit: e.target.value } : null)}
+                  required
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="editPurchase">Purchase Price</Label>
+                <Input
+                  id="editPurchase"
+                  type="number"
+                  placeholder="₹0"
+                  className="rounded-xl"
+                  value={editingItem?.purchasePrice || ""}
+                  onChange={(e) => setEditingItem(editingItem ? { ...editingItem, purchasePrice: Number(e.target.value) } : null)}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="editSelling">Selling Price</Label>
+                <Input
+                  id="editSelling"
+                  type="number"
+                  placeholder="₹0"
+                  className="rounded-xl"
+                  value={editingItem?.sellingPrice || ""}
+                  onChange={(e) => setEditingItem(editingItem ? { ...editingItem, sellingPrice: Number(e.target.value) } : null)}
+                  required
+                />
+              </div>
+            </div>
+            <Button type="submit" className="w-full rounded-xl" disabled={updateMutation.isPending}>
+              {updateMutation.isPending ? "Updating..." : "Update Item"}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deletingItemId !== null} onOpenChange={(open) => !open && setDeletingItemId(null)}>
+        <AlertDialogContent className="rounded-3xl max-w-[90%]">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the item from your inventory.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-xl">Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              className="rounded-xl" 
+              onClick={confirmDelete}
+              disabled={deleteMutation.isPending}
+            >
+              {deleteMutation.isPending ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <BottomNav />
     </div>
