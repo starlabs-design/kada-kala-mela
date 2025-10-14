@@ -28,6 +28,7 @@ export interface IStorage {
   getTransactions(): Promise<Transaction[]>;
   getTransaction(id: number): Promise<Transaction | undefined>;
   createTransaction(transaction: InsertTransaction): Promise<Transaction>;
+  updateTransaction(id: number, transaction: Partial<InsertTransaction>): Promise<Transaction | undefined>;
   deleteTransaction(id: number): Promise<void>;
 
   getSettings(): Promise<Settings | undefined>;
@@ -92,6 +93,11 @@ export class DbStorage implements IStorage {
 
   async createTransaction(transaction: InsertTransaction): Promise<Transaction> {
     const result = await db.insert(transactions).values(transaction).returning();
+    return result[0];
+  }
+
+  async updateTransaction(id: number, transaction: Partial<InsertTransaction>): Promise<Transaction | undefined> {
+    const result = await db.update(transactions).set(transaction).where(eq(transactions.id, id)).returning();
     return result[0];
   }
 
