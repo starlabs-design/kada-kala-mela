@@ -247,241 +247,249 @@ const Inventory = () => {
             <Plus className="h-6 w-6" />
           </Button>
         </DialogTrigger>
-        <DialogContent className="rounded-3xl max-w-[90%] sm:max-w-md max-h-[85vh] flex flex-col">
-          <DialogHeader className="flex-shrink-0">
-            <DialogTitle>Add New Item</DialogTitle>
+        <DialogContent className="rounded-3xl max-w-[95%] sm:max-w-lg max-h-[90vh] flex flex-col p-0">
+          <DialogHeader className="flex-shrink-0 px-6 pt-6 pb-2">
+            <DialogTitle className="text-xl">Add New Item</DialogTitle>
             <DialogDescription>Add a new product to your inventory</DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-4 py-4 overflow-y-auto flex-grow">
-            <div className="space-y-2">
-              <Label htmlFor="itemName">Item Name</Label>
-              <Input 
-                id="itemName" 
-                placeholder="Enter item name" 
-                className="rounded-xl"
-                value={newItem.name}
-                onChange={(e) => setNewItem({ ...newItem, name: e.target.value })}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="category">Category</Label>
-              <Select value={newItem.category} onValueChange={(value) => setNewItem({ ...newItem, category: value })}>
-                <SelectTrigger className="rounded-xl">
-                  <SelectValue placeholder="Select category" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Inventory / Purchases">Inventory / Purchases</SelectItem>
-                  <SelectItem value="Rent & Utilities">Rent & Utilities</SelectItem>
-                  <SelectItem value="Packaging & Supplies">Packaging & Supplies</SelectItem>
-                  <SelectItem value="Transportation">Transportation</SelectItem>
-                  <SelectItem value="Maintenance & Cleaning">Maintenance & Cleaning</SelectItem>
-                  <SelectItem value="Wages / Labor">Wages / Labor</SelectItem>
-                  <SelectItem value="Marketing & Advertising">Marketing & Advertising</SelectItem>
-                  <SelectItem value="Licenses & Fees">Licenses & Fees</SelectItem>
-                  <SelectItem value="Equipment & Tools">Equipment & Tools</SelectItem>
-                  <SelectItem value="Miscellaneous / Others">Miscellaneous / Others</SelectItem>
-                  <SelectItem value="Tea & Beverages Sales">Tea & Beverages Sales</SelectItem>
-                  <SelectItem value="Snacks Sales">Snacks Sales</SelectItem>
-                  <SelectItem value="Grocery Sales">Grocery Sales</SelectItem>
-                  <SelectItem value="Special / Seasonal Items">Special / Seasonal Items</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <form onSubmit={handleSubmit} className="flex flex-col flex-grow overflow-hidden">
+            <div className="space-y-4 px-6 py-4 overflow-y-auto flex-grow">
               <div className="space-y-2">
-                <Label htmlFor="quantity">Quantity</Label>
-                <Input
-                  id="quantity"
-                  type="number"
-                  placeholder="0"
-                  className="rounded-xl"
-                  value={newItem.quantity || ""}
-                  onChange={(e) => setNewItem({ ...newItem, quantity: Number(e.target.value) })}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="unit">Unit</Label>
+                <Label htmlFor="itemName">Item Name</Label>
                 <Input 
-                  id="unit" 
-                  placeholder="kg, pack, etc" 
+                  id="itemName" 
+                  placeholder="Enter item name" 
                   className="rounded-xl"
-                  value={newItem.unit}
-                  onChange={(e) => setNewItem({ ...newItem, unit: e.target.value })}
-                  required
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="purchase">Purchase Price</Label>
-                <Input
-                  id="purchase"
-                  type="number"
-                  placeholder="₹0"
-                  className="rounded-xl"
-                  value={newItem.purchasePrice || ""}
-                  onChange={(e) => setNewItem({ ...newItem, purchasePrice: Number(e.target.value) })}
+                  value={newItem.name}
+                  onChange={(e) => setNewItem({ ...newItem, name: e.target.value })}
                   required
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="selling">Selling Price</Label>
-                <Input
-                  id="selling"
-                  type="number"
-                  placeholder="₹0"
-                  className="rounded-xl"
-                  value={newItem.sellingPrice || ""}
-                  onChange={(e) => setNewItem({ ...newItem, sellingPrice: Number(e.target.value) })}
-                  required
-                />
+                <Label htmlFor="category">Category</Label>
+                <Select value={newItem.category} onValueChange={(value) => setNewItem({ ...newItem, category: value })}>
+                  <SelectTrigger className="rounded-xl">
+                    <SelectValue placeholder="Select category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Inventory / Purchases">Inventory / Purchases</SelectItem>
+                    <SelectItem value="Rent & Utilities">Rent & Utilities</SelectItem>
+                    <SelectItem value="Packaging & Supplies">Packaging & Supplies</SelectItem>
+                    <SelectItem value="Transportation">Transportation</SelectItem>
+                    <SelectItem value="Maintenance & Cleaning">Maintenance & Cleaning</SelectItem>
+                    <SelectItem value="Wages / Labor">Wages / Labor</SelectItem>
+                    <SelectItem value="Marketing & Advertising">Marketing & Advertising</SelectItem>
+                    <SelectItem value="Licenses & Fees">Licenses & Fees</SelectItem>
+                    <SelectItem value="Equipment & Tools">Equipment & Tools</SelectItem>
+                    <SelectItem value="Miscellaneous / Others">Miscellaneous / Others</SelectItem>
+                    <SelectItem value="Tea & Beverages Sales">Tea & Beverages Sales</SelectItem>
+                    <SelectItem value="Snacks Sales">Snacks Sales</SelectItem>
+                    <SelectItem value="Grocery Sales">Grocery Sales</SelectItem>
+                    <SelectItem value="Special / Seasonal Items">Special / Seasonal Items</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="quantity">Quantity</Label>
+                  <Input
+                    id="quantity"
+                    type="number"
+                    placeholder="0"
+                    className="rounded-xl"
+                    value={newItem.quantity || ""}
+                    onChange={(e) => setNewItem({ ...newItem, quantity: Number(e.target.value) })}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="unit">Unit</Label>
+                  <Input 
+                    id="unit" 
+                    placeholder="kg, pack, etc" 
+                    className="rounded-xl"
+                    value={newItem.unit}
+                    onChange={(e) => setNewItem({ ...newItem, unit: e.target.value })}
+                    required
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="purchase">Purchase Price</Label>
+                  <Input
+                    id="purchase"
+                    type="number"
+                    placeholder="0"
+                    className="rounded-xl"
+                    value={newItem.purchasePrice || ""}
+                    onChange={(e) => setNewItem({ ...newItem, purchasePrice: Number(e.target.value) })}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="selling">Selling Price</Label>
+                  <Input
+                    id="selling"
+                    type="number"
+                    placeholder="0"
+                    className="rounded-xl"
+                    value={newItem.sellingPrice || ""}
+                    onChange={(e) => setNewItem({ ...newItem, sellingPrice: Number(e.target.value) })}
+                    required
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="seller">Seller (Optional)</Label>
+                <Select 
+                  value={newItem.sellerId?.toString() || ""} 
+                  onValueChange={(value) => setNewItem({ ...newItem, sellerId: value ? Number(value) : null })}
+                >
+                  <SelectTrigger className="rounded-xl">
+                    <SelectValue placeholder="Select seller" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {sellers.map((seller) => (
+                      <SelectItem key={seller.id} value={seller.id.toString()}>
+                        {seller.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="seller">Seller (Optional)</Label>
-              <Select 
-                value={newItem.sellerId?.toString() || ""} 
-                onValueChange={(value) => setNewItem({ ...newItem, sellerId: value ? Number(value) : null })}
-              >
-                <SelectTrigger className="rounded-xl">
-                  <SelectValue placeholder="Select seller" />
-                </SelectTrigger>
-                <SelectContent>
-                  {sellers.map((seller) => (
-                    <SelectItem key={seller.id} value={seller.id.toString()}>
-                      {seller.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="flex-shrink-0 px-6 py-4 border-t bg-background">
+              <Button type="submit" className="w-full rounded-xl h-11" disabled={createMutation.isPending}>
+                {createMutation.isPending ? "Adding..." : "Add Item"}
+              </Button>
             </div>
-            <Button type="submit" className="w-full rounded-xl" disabled={createMutation.isPending}>
-              {createMutation.isPending ? "Adding..." : "Add Item"}
-            </Button>
           </form>
         </DialogContent>
       </Dialog>
 
       {/* Edit Item Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="rounded-3xl max-w-[90%] sm:max-w-md max-h-[85vh] flex flex-col">
-          <DialogHeader className="flex-shrink-0">
-            <DialogTitle>Edit Item</DialogTitle>
+        <DialogContent className="rounded-3xl max-w-[95%] sm:max-w-lg max-h-[90vh] flex flex-col p-0">
+          <DialogHeader className="flex-shrink-0 px-6 pt-6 pb-2">
+            <DialogTitle className="text-xl">Edit Item</DialogTitle>
             <DialogDescription>Update product information</DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleEditSubmit} className="space-y-4 py-4 overflow-y-auto flex-grow">
-            <div className="space-y-2">
-              <Label htmlFor="editItemName">Item Name</Label>
-              <Input 
-                id="editItemName" 
-                placeholder="Enter item name" 
-                className="rounded-xl"
-                value={editingItem?.name || ""}
-                onChange={(e) => setEditingItem(editingItem ? { ...editingItem, name: e.target.value } : null)}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="editCategory">Category</Label>
-              <Select 
-                value={editingItem?.category || ""} 
-                onValueChange={(value) => setEditingItem(editingItem ? { ...editingItem, category: value } : null)}
-              >
-                <SelectTrigger className="rounded-xl">
-                  <SelectValue placeholder="Select category" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Inventory / Purchases">Inventory / Purchases</SelectItem>
-                  <SelectItem value="Rent & Utilities">Rent & Utilities</SelectItem>
-                  <SelectItem value="Packaging & Supplies">Packaging & Supplies</SelectItem>
-                  <SelectItem value="Transportation">Transportation</SelectItem>
-                  <SelectItem value="Maintenance & Cleaning">Maintenance & Cleaning</SelectItem>
-                  <SelectItem value="Wages / Labor">Wages / Labor</SelectItem>
-                  <SelectItem value="Marketing & Advertising">Marketing & Advertising</SelectItem>
-                  <SelectItem value="Licenses & Fees">Licenses & Fees</SelectItem>
-                  <SelectItem value="Equipment & Tools">Equipment & Tools</SelectItem>
-                  <SelectItem value="Miscellaneous / Others">Miscellaneous / Others</SelectItem>
-                  <SelectItem value="Tea & Beverages Sales">Tea & Beverages Sales</SelectItem>
-                  <SelectItem value="Snacks Sales">Snacks Sales</SelectItem>
-                  <SelectItem value="Grocery Sales">Grocery Sales</SelectItem>
-                  <SelectItem value="Special / Seasonal Items">Special / Seasonal Items</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <form onSubmit={handleEditSubmit} className="flex flex-col flex-grow overflow-hidden">
+            <div className="space-y-4 px-6 py-4 overflow-y-auto flex-grow">
               <div className="space-y-2">
-                <Label htmlFor="editQuantity">Quantity</Label>
-                <Input
-                  id="editQuantity"
-                  type="number"
-                  placeholder="0"
-                  className="rounded-xl"
-                  value={editingItem?.quantity || ""}
-                  onChange={(e) => setEditingItem(editingItem ? { ...editingItem, quantity: Number(e.target.value) } : null)}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="editUnit">Unit</Label>
+                <Label htmlFor="editItemName">Item Name</Label>
                 <Input 
-                  id="editUnit" 
-                  placeholder="kg, pack, etc" 
+                  id="editItemName" 
+                  placeholder="Enter item name" 
                   className="rounded-xl"
-                  value={editingItem?.unit || ""}
-                  onChange={(e) => setEditingItem(editingItem ? { ...editingItem, unit: e.target.value } : null)}
-                  required
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="editPurchase">Purchase Price</Label>
-                <Input
-                  id="editPurchase"
-                  type="number"
-                  placeholder="₹0"
-                  className="rounded-xl"
-                  value={editingItem?.purchasePrice || ""}
-                  onChange={(e) => setEditingItem(editingItem ? { ...editingItem, purchasePrice: Number(e.target.value) } : null)}
+                  value={editingItem?.name || ""}
+                  onChange={(e) => setEditingItem(editingItem ? { ...editingItem, name: e.target.value } : null)}
                   required
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="editSelling">Selling Price</Label>
-                <Input
-                  id="editSelling"
-                  type="number"
-                  placeholder="₹0"
-                  className="rounded-xl"
-                  value={editingItem?.sellingPrice || ""}
-                  onChange={(e) => setEditingItem(editingItem ? { ...editingItem, sellingPrice: Number(e.target.value) } : null)}
-                  required
-                />
+                <Label htmlFor="editCategory">Category</Label>
+                <Select 
+                  value={editingItem?.category || ""} 
+                  onValueChange={(value) => setEditingItem(editingItem ? { ...editingItem, category: value } : null)}
+                >
+                  <SelectTrigger className="rounded-xl">
+                    <SelectValue placeholder="Select category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Inventory / Purchases">Inventory / Purchases</SelectItem>
+                    <SelectItem value="Rent & Utilities">Rent & Utilities</SelectItem>
+                    <SelectItem value="Packaging & Supplies">Packaging & Supplies</SelectItem>
+                    <SelectItem value="Transportation">Transportation</SelectItem>
+                    <SelectItem value="Maintenance & Cleaning">Maintenance & Cleaning</SelectItem>
+                    <SelectItem value="Wages / Labor">Wages / Labor</SelectItem>
+                    <SelectItem value="Marketing & Advertising">Marketing & Advertising</SelectItem>
+                    <SelectItem value="Licenses & Fees">Licenses & Fees</SelectItem>
+                    <SelectItem value="Equipment & Tools">Equipment & Tools</SelectItem>
+                    <SelectItem value="Miscellaneous / Others">Miscellaneous / Others</SelectItem>
+                    <SelectItem value="Tea & Beverages Sales">Tea & Beverages Sales</SelectItem>
+                    <SelectItem value="Snacks Sales">Snacks Sales</SelectItem>
+                    <SelectItem value="Grocery Sales">Grocery Sales</SelectItem>
+                    <SelectItem value="Special / Seasonal Items">Special / Seasonal Items</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="editQuantity">Quantity</Label>
+                  <Input
+                    id="editQuantity"
+                    type="number"
+                    placeholder="0"
+                    className="rounded-xl"
+                    value={editingItem?.quantity || ""}
+                    onChange={(e) => setEditingItem(editingItem ? { ...editingItem, quantity: Number(e.target.value) } : null)}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="editUnit">Unit</Label>
+                  <Input 
+                    id="editUnit" 
+                    placeholder="kg, pack, etc" 
+                    className="rounded-xl"
+                    value={editingItem?.unit || ""}
+                    onChange={(e) => setEditingItem(editingItem ? { ...editingItem, unit: e.target.value } : null)}
+                    required
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="editPurchase">Purchase Price</Label>
+                  <Input
+                    id="editPurchase"
+                    type="number"
+                    placeholder="0"
+                    className="rounded-xl"
+                    value={editingItem?.purchasePrice || ""}
+                    onChange={(e) => setEditingItem(editingItem ? { ...editingItem, purchasePrice: Number(e.target.value) } : null)}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="editSelling">Selling Price</Label>
+                  <Input
+                    id="editSelling"
+                    type="number"
+                    placeholder="0"
+                    className="rounded-xl"
+                    value={editingItem?.sellingPrice || ""}
+                    onChange={(e) => setEditingItem(editingItem ? { ...editingItem, sellingPrice: Number(e.target.value) } : null)}
+                    required
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="editSeller">Seller (Optional)</Label>
+                <Select 
+                  value={editingItem?.sellerId?.toString() || ""} 
+                  onValueChange={(value) => setEditingItem(editingItem ? { ...editingItem, sellerId: value ? Number(value) : null } : null)}
+                >
+                  <SelectTrigger className="rounded-xl">
+                    <SelectValue placeholder="Select seller" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {sellers.map((seller) => (
+                      <SelectItem key={seller.id} value={seller.id.toString()}>
+                        {seller.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="editSeller">Seller (Optional)</Label>
-              <Select 
-                value={editingItem?.sellerId?.toString() || ""} 
-                onValueChange={(value) => setEditingItem(editingItem ? { ...editingItem, sellerId: value ? Number(value) : null } : null)}
-              >
-                <SelectTrigger className="rounded-xl">
-                  <SelectValue placeholder="Select seller" />
-                </SelectTrigger>
-                <SelectContent>
-                  {sellers.map((seller) => (
-                    <SelectItem key={seller.id} value={seller.id.toString()}>
-                      {seller.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="flex-shrink-0 px-6 py-4 border-t bg-background">
+              <Button type="submit" className="w-full rounded-xl h-11" disabled={updateMutation.isPending}>
+                {updateMutation.isPending ? "Updating..." : "Update Item"}
+              </Button>
             </div>
-            <Button type="submit" className="w-full rounded-xl" disabled={updateMutation.isPending}>
-              {updateMutation.isPending ? "Updating..." : "Update Item"}
-            </Button>
           </form>
         </DialogContent>
       </Dialog>
