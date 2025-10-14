@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,9 +22,10 @@ import {
 } from "@/components/ui/select";
 import { Plus, Search, AlertCircle, Package } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
+import { inventoryAPI } from "@/lib/api";
+import { toast } from "sonner";
 
-interface InventoryItem {
-  id: string;
+interface InventoryFormData {
   name: string;
   category: string;
   quantity: number;
@@ -36,48 +38,40 @@ interface InventoryItem {
 const Inventory = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
-  const [items] = useState<InventoryItem[]>([
-    {
-      id: "1",
-      name: "Tea Powder",
-      category: "Tea & Snacks",
-      quantity: 5,
-      unit: "kg",
-      purchasePrice: 400,
-      sellingPrice: 450,
-      lowStockAlert: true,
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const queryClient = useQueryClient();
+
+  const { data: items = [] } = useQuery({
+    queryKey: ["inventory"],
+    queryFn: inventoryAPI.getAll,
+  });
+
+  const createMutation = useMutation({
+    mutationFn: inventoryAPI.create,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["inventory"] });
+      setIsDialogOpen(false);
+      toast.success("Item added successfully!");
     },
-    {
-      id: "2",
-      name: "Parle-G Biscuits",
-      category: "Tea & Snacks",
-      quantity: 25,
-      unit: "packs",
-      purchasePrice: 15,
-      sellingPrice: 20,
-      lowStockAlert: false,
+    onError: () => {
+      toast.error("Failed to add item");
     },
-    {
-      id: "3",
-      name: "Rice (Matta)",
-      category: "Groceries",
-      quantity: 8,
-      unit: "kg",
-      purchasePrice: 50,
-      sellingPrice: 65,
-      lowStockAlert: true,
-    },
-    {
-      id: "4",
-      name: "Sugar",
-      category: "Groceries",
-      quantity: 15,
-      unit: "kg",
-      purchasePrice: 35,
-      sellingPrice: 42,
-      lowStockAlert: false,
-    },
-  ]);
+  });
+
+  const [newItem, setNewItem] = useState<InventoryFormData>({
+    name: "",
+    category: "",
+    quantity: 0,
+    unit: "",
+    purchasePrice: 0,
+    sellingPrice: 0,
+    lowStockAlert: false,
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    createMutation.mutate(newItem as any);
+  };
 
   const filteredItems = items.filter((item) => {
     const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
@@ -167,7 +161,7 @@ const Inventory = () => {
       </div>
 
       {/* Add Item Button */}
-      <Dialog>
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogTrigger asChild>
           <Button
             className="fixed bottom-24 right-6 h-14 w-14 rounded-full shadow-lg"
@@ -181,21 +175,28 @@ const Inventory = () => {
             <DialogTitle>Add New Item</DialogTitle>
             <DialogDescription>Add a new product to your inventory</DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
+          <form onSubmit={handleSubmit} className="space-y-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="itemName">Item Name</Label>
-              <Input id="itemName" placeholder="Enter item name" className="rounded-xl" />
+              <Input 
+                id="itemName" 
+                placeholder="Enter item name" 
+                className="rounded-xl"
+                value={newItem.name}
+                onChange={(e) => setNewItem({ ...newItem, name: e.target.value })}
+                required
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="category">Category</Label>
-              <Select>
+              <Select value={newItem.category} onValueChange={(value) => setNewItem({ ...newItem, category: value })}>
                 <SelectTrigger className="rounded-xl">
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="tea">Tea & Snacks</SelectItem>
-                  <SelectItem value="groceries">Groceries</SelectItem>
-                  <SelectItem value="others">Others</SelectItem>
+                  <SelectItem value="Tea & Snacks">Tea & Snacks</SelectItem>
+                  <SelectItem value="Groceries">Groceries</SelectItem>
+                  <SelectItem value="Others">Others</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -207,11 +208,21 @@ const Inventory = () => {
                   type="number"
                   placeholder="0"
                   className="rounded-xl"
+                  value={newItem.quantity || ""}
+                  onChange={(e) => setNewItem({ ...newItem, quantity: Number(e.target.value) })}
+                  required
                 />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="unit">Unit</Label>
-                <Input id="unit" placeholder="kg, pack, etc" className="rounded-xl" />
+                <Input 
+                  id="unit" 
+                  placeholder="kg, pack, etc" 
+                  className="rounded-xl"
+                  value={newItem.unit}
+                  onChange={(e) => setNewItem({ ...newItem, unit: e.target.value })}
+                  required
+                />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -222,6 +233,9 @@ const Inventory = () => {
                   type="number"
                   placeholder="₹0"
                   className="rounded-xl"
+                  value={newItem.purchasePrice || ""}
+                  onChange={(e) => setNewItem({ ...newItem, purchasePrice: Number(e.target.value) })}
+                  required
                 />
               </div>
               <div className="space-y-2">
@@ -231,11 +245,16 @@ const Inventory = () => {
                   type="number"
                   placeholder="₹0"
                   className="rounded-xl"
+                  value={newItem.sellingPrice || ""}
+                  onChange={(e) => setNewItem({ ...newItem, sellingPrice: Number(e.target.value) })}
+                  required
                 />
               </div>
             </div>
-            <Button className="w-full rounded-xl">Add Item</Button>
-          </div>
+            <Button type="submit" className="w-full rounded-xl" disabled={createMutation.isPending}>
+              {createMutation.isPending ? "Adding..." : "Add Item"}
+            </Button>
+          </form>
         </DialogContent>
       </Dialog>
 
