@@ -58,7 +58,7 @@ const Pricing = () => {
 
       const tableData = filteredItems.map((item) => [
         item.name,
-        `₹${item.sellingPrice}`,
+        `Rs. ${item.sellingPrice}`,
       ]);
 
       autoTable(doc, {
@@ -141,7 +141,7 @@ const Pricing = () => {
                     <TableRow key={item.id} className="hover:bg-muted/30">
                       <TableCell className="font-medium">{item.name}</TableCell>
                       <TableCell className="text-right font-semibold text-success">
-                        ₹{item.sellingPrice.toLocaleString('en-IN')}
+                        Rs. {item.sellingPrice.toLocaleString('en-IN')}
                       </TableCell>
                     </TableRow>
                   ))
