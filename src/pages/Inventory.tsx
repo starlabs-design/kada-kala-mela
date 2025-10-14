@@ -48,7 +48,6 @@ interface InventoryFormData {
 
 const Inventory = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("all");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [deletingItemId, setDeletingItemId] = useState<number | null>(null);
@@ -153,9 +152,7 @@ const Inventory = () => {
   };
 
   const filteredItems = items.filter((item) => {
-    const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === "all" || item.category === selectedCategory;
-    return matchesSearch && matchesCategory;
+    return item.name.toLowerCase().includes(searchQuery.toLowerCase());
   });
 
   return (
@@ -166,8 +163,8 @@ const Inventory = () => {
         <p className="text-primary-foreground/90 text-sm">സാധനങ്ങൾ</p>
       </div>
 
-      {/* Search and Filter */}
-      <div className="px-4 py-4 space-y-4">
+      {/* Search */}
+      <div className="px-4 py-4">
         <div className="relative">
           <Search className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
           <Input
@@ -176,114 +173,6 @@ const Inventory = () => {
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10 rounded-2xl border-border bg-card"
           />
-        </div>
-
-        <div className="flex gap-2 overflow-x-auto pb-2">
-          <Button
-            variant={selectedCategory === "all" ? "default" : "outline"}
-            onClick={() => setSelectedCategory("all")}
-            className="rounded-full flex-shrink-0"
-          >
-            All
-          </Button>
-          <Button
-            variant={selectedCategory === "Inventory / Purchases" ? "default" : "outline"}
-            onClick={() => setSelectedCategory("Inventory / Purchases")}
-            className="rounded-full flex-shrink-0 text-xs"
-          >
-            Inventory
-          </Button>
-          <Button
-            variant={selectedCategory === "Rent & Utilities" ? "default" : "outline"}
-            onClick={() => setSelectedCategory("Rent & Utilities")}
-            className="rounded-full flex-shrink-0 text-xs"
-          >
-            Rent
-          </Button>
-          <Button
-            variant={selectedCategory === "Packaging & Supplies" ? "default" : "outline"}
-            onClick={() => setSelectedCategory("Packaging & Supplies")}
-            className="rounded-full flex-shrink-0 text-xs"
-          >
-            Packaging
-          </Button>
-          <Button
-            variant={selectedCategory === "Transportation" ? "default" : "outline"}
-            onClick={() => setSelectedCategory("Transportation")}
-            className="rounded-full flex-shrink-0 text-xs"
-          >
-            Transport
-          </Button>
-          <Button
-            variant={selectedCategory === "Maintenance & Cleaning" ? "default" : "outline"}
-            onClick={() => setSelectedCategory("Maintenance & Cleaning")}
-            className="rounded-full flex-shrink-0 text-xs"
-          >
-            Maintenance
-          </Button>
-          <Button
-            variant={selectedCategory === "Wages / Labor" ? "default" : "outline"}
-            onClick={() => setSelectedCategory("Wages / Labor")}
-            className="rounded-full flex-shrink-0 text-xs"
-          >
-            Wages
-          </Button>
-          <Button
-            variant={selectedCategory === "Marketing & Advertising" ? "default" : "outline"}
-            onClick={() => setSelectedCategory("Marketing & Advertising")}
-            className="rounded-full flex-shrink-0 text-xs"
-          >
-            Marketing
-          </Button>
-          <Button
-            variant={selectedCategory === "Licenses & Fees" ? "default" : "outline"}
-            onClick={() => setSelectedCategory("Licenses & Fees")}
-            className="rounded-full flex-shrink-0 text-xs"
-          >
-            Licenses
-          </Button>
-          <Button
-            variant={selectedCategory === "Equipment & Tools" ? "default" : "outline"}
-            onClick={() => setSelectedCategory("Equipment & Tools")}
-            className="rounded-full flex-shrink-0 text-xs"
-          >
-            Equipment
-          </Button>
-          <Button
-            variant={selectedCategory === "Miscellaneous / Others" ? "default" : "outline"}
-            onClick={() => setSelectedCategory("Miscellaneous / Others")}
-            className="rounded-full flex-shrink-0 text-xs"
-          >
-            Miscellaneous
-          </Button>
-          <Button
-            variant={selectedCategory === "Tea & Beverages Sales" ? "default" : "outline"}
-            onClick={() => setSelectedCategory("Tea & Beverages Sales")}
-            className="rounded-full flex-shrink-0 text-xs"
-          >
-            Tea
-          </Button>
-          <Button
-            variant={selectedCategory === "Snacks Sales" ? "default" : "outline"}
-            onClick={() => setSelectedCategory("Snacks Sales")}
-            className="rounded-full flex-shrink-0 text-xs"
-          >
-            Snacks
-          </Button>
-          <Button
-            variant={selectedCategory === "Grocery Sales" ? "default" : "outline"}
-            onClick={() => setSelectedCategory("Grocery Sales")}
-            className="rounded-full flex-shrink-0 text-xs"
-          >
-            Grocery
-          </Button>
-          <Button
-            variant={selectedCategory === "Special / Seasonal Items" ? "default" : "outline"}
-            onClick={() => setSelectedCategory("Special / Seasonal Items")}
-            className="rounded-full flex-shrink-0 text-xs"
-          >
-            Special
-          </Button>
         </div>
       </div>
 
