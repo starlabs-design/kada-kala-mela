@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { inventoryItems, sellers, transactions, settings, bills, billItems } from "@shared/schema";
+import { inventoryItems, sellers, transactions, settings, bills, billItems, customers, payments } from "@shared/schema";
 import type { 
   InventoryItem, 
   InsertInventoryItem, 
@@ -12,9 +12,13 @@ import type {
   Bill,
   InsertBill,
   BillItem,
-  InsertBillItem
+  InsertBillItem,
+  Customer,
+  InsertCustomer,
+  Payment,
+  InsertPayment
 } from "@shared/schema";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, sql } from "drizzle-orm";
 
 export interface IStorage {
   getInventoryItems(): Promise<InventoryItem[]>;
@@ -38,11 +42,23 @@ export interface IStorage {
   getSettings(): Promise<Settings | undefined>;
   updateSettings(settings: Partial<InsertSettings>): Promise<Settings>;
 
+  getCustomers(): Promise<Customer[]>;
+  getCustomer(id: number): Promise<Customer | undefined>;
+  getCustomerByName(name: string): Promise<Customer | undefined>;
+  createCustomer(customer: InsertCustomer): Promise<Customer>;
+  updateCustomer(id: number, customer: Partial<InsertCustomer>): Promise<Customer | undefined>;
+  deleteCustomer(id: number): Promise<void>;
+
   getBills(): Promise<Bill[]>;
   getBill(id: number): Promise<Bill | undefined>;
+  getBillsByCustomer(customerId: number): Promise<Bill[]>;
   createBill(bill: InsertBill): Promise<Bill>;
+  updateBill(id: number, bill: Partial<InsertBill>): Promise<Bill | undefined>;
   getBillItems(billId: number): Promise<BillItem[]>;
   createBillItem(item: InsertBillItem): Promise<BillItem>;
+
+  getPayments(billId: number): Promise<Payment[]>;
+  createPayment(payment: InsertPayment): Promise<Payment>;
 }
 
 export class DbStorage implements IStorage {
@@ -134,6 +150,34 @@ export class DbStorage implements IStorage {
     return result[0];
   }
 
+  async getCustomers(): Promise<Customer[]> {
+    return await db.select().from(customers).orderBy(desc(customers.createdAt));
+  }
+
+  async getCustomer(id: number): Promise<Customer | undefined> {
+    const result = await db.select().from(customers).where(eq(customers.id, id));
+    return result[0];
+  }
+
+  async getCustomerByName(name: string): Promise<Customer | undefined> {
+    const result = await db.select().from(customers).where(eq(customers.name, name));
+    return result[0];
+  }
+
+  async createCustomer(customer: InsertCustomer): Promise<Customer> {
+    const result = await db.insert(customers).values(customer).returning();
+    return result[0];
+  }
+
+  async updateCustomer(id: number, customer: Partial<InsertCustomer>): Promise<Customer | undefined> {
+    const result = await db.update(customers).set(customer).where(eq(customers.id, id)).returning();
+    return result[0];
+  }
+
+  async deleteCustomer(id: number): Promise<void> {
+    await db.delete(customers).where(eq(customers.id, id));
+  }
+
   async getBills(): Promise<Bill[]> {
     return await db.select().from(bills).orderBy(desc(bills.createdAt));
   }
@@ -143,8 +187,17 @@ export class DbStorage implements IStorage {
     return result[0];
   }
 
+  async getBillsByCustomer(customerId: number): Promise<Bill[]> {
+    return await db.select().from(bills).where(eq(bills.customerId, customerId)).orderBy(desc(bills.createdAt));
+  }
+
   async createBill(bill: InsertBill): Promise<Bill> {
     const result = await db.insert(bills).values(bill).returning();
+    return result[0];
+  }
+
+  async updateBill(id: number, bill: Partial<InsertBill>): Promise<Bill | undefined> {
+    const result = await db.update(bills).set(bill).where(eq(bills.id, id)).returning();
     return result[0];
   }
 
@@ -154,6 +207,15 @@ export class DbStorage implements IStorage {
 
   async createBillItem(item: InsertBillItem): Promise<BillItem> {
     const result = await db.insert(billItems).values(item).returning();
+    return result[0];
+  }
+
+  async getPayments(billId: number): Promise<Payment[]> {
+    return await db.select().from(payments).where(eq(payments.billId, billId)).orderBy(desc(payments.createdAt));
+  }
+
+  async createPayment(payment: InsertPayment): Promise<Payment> {
+    const result = await db.insert(payments).values(payment).returning();
     return result[0];
   }
 }

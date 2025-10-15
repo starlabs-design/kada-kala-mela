@@ -86,10 +86,32 @@ export const insertSettingsSchema = baseSettingsSchema.omit({
 export type InsertSettings = z.infer<typeof insertSettingsSchema>;
 export type Settings = typeof settings.$inferSelect;
 
+export const customers = pgTable("customers", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }).notNull().unique(),
+  phone: varchar("phone", { length: 20 }),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+const baseCustomerSchema = createInsertSchema(customers);
+export const insertCustomerSchema = baseCustomerSchema.omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertCustomer = z.infer<typeof insertCustomerSchema>;
+export type Customer = typeof customers.$inferSelect;
+
 export const bills = pgTable("bills", {
   id: serial("id").primaryKey(),
   billNumber: varchar("bill_number", { length: 50 }).notNull().unique(),
+  customerId: integer("customer_id").references(() => customers.id, { onDelete: "restrict" }),
   subtotal: numeric("subtotal", { precision: 10, scale: 2, mode: "number" }).notNull(),
+  totalAmount: numeric("total_amount", { precision: 10, scale: 2, mode: "number" }).notNull(),
+  amountPaid: numeric("amount_paid", { precision: 10, scale: 2, mode: "number" }).notNull().default("0"),
+  balanceDue: numeric("balance_due", { precision: 10, scale: 2, mode: "number" }).notNull().default("0"),
+  status: varchar("status", { length: 20 }).notNull().default("due"),
   date: varchar("date", { length: 10 }).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
@@ -121,3 +143,20 @@ export const insertBillItemSchema = baseBillItemSchema.omit({
 
 export type InsertBillItem = z.infer<typeof insertBillItemSchema>;
 export type BillItem = typeof billItems.$inferSelect;
+
+export const payments = pgTable("payments", {
+  id: serial("id").primaryKey(),
+  billId: integer("bill_id").references(() => bills.id, { onDelete: "cascade" }).notNull(),
+  amount: numeric("amount", { precision: 10, scale: 2, mode: "number" }).notNull(),
+  remarks: text("remarks"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+const basePaymentSchema = createInsertSchema(payments);
+export const insertPaymentSchema = basePaymentSchema.omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertPayment = z.infer<typeof insertPaymentSchema>;
+export type Payment = typeof payments.$inferSelect;
