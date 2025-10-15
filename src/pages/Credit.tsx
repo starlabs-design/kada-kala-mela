@@ -5,9 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { CreditCard, DollarSign, AlertCircle } from "lucide-react";
+import { CreditCard, DollarSign, AlertCircle, User } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import BottomNav from "@/components/BottomNav";
@@ -29,13 +29,18 @@ interface Bill {
   date: string;
 }
 
-interface BillWithCustomer extends Bill {
-  customerName?: string;
+interface CustomerDue {
+  customerId: number;
+  customerName: string;
   customerPhone?: string;
+  totalDue: number;
+  pendingBillsCount: number;
+  bills: Bill[];
 }
 
 export default function Credit() {
-  const [selectedBill, setSelectedBill] = useState<BillWithCustomer | null>(null);
+  const [selectedCustomer, setSelectedCustomer] = useState<CustomerDue | null>(null);
+  const [selectedBillId, setSelectedBillId] = useState<string>("");
   const [paymentAmount, setPaymentAmount] = useState("");
   const [paymentRemarks, setPaymentRemarks] = useState("");
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
@@ -74,7 +79,8 @@ export default function Credit() {
       setShowPaymentDialog(false);
       setPaymentAmount("");
       setPaymentRemarks("");
-      setSelectedBill(null);
+      setSelectedBillId("");
+      setSelectedCustomer(null);
       toast.success("Payment recorded successfully");
     },
     onError: () => {
@@ -82,28 +88,41 @@ export default function Credit() {
     },
   });
 
-  const billsWithCustomers: BillWithCustomer[] = bills.map(bill => {
-    const customer = customers.find(c => c.id === bill.customerId);
-    return {
-      ...bill,
-      customerName: customer?.name,
-      customerPhone: customer?.phone,
-    };
-  });
+  // Group bills by customer and calculate total due per customer
+  const customerDues: CustomerDue[] = customers
+    .map(customer => {
+      const customerBills = bills.filter(
+        bill => bill.customerId === customer.id && (bill.status === "due" || bill.status === "partially_paid")
+      );
+      
+      if (customerBills.length === 0) return null;
+      
+      const totalDue = customerBills.reduce((sum, bill) => sum + bill.balanceDue, 0);
+      
+      return {
+        customerId: customer.id,
+        customerName: customer.name,
+        customerPhone: customer.phone,
+        totalDue,
+        pendingBillsCount: customerBills.length,
+        bills: customerBills,
+      };
+    })
+    .filter((cd): cd is CustomerDue => cd !== null)
+    .sort((a, b) => b.totalDue - a.totalDue); // Sort by highest due first
 
-  const dueBills = billsWithCustomers.filter(
-    bill => bill.status === "due" || bill.status === "partially_paid"
-  );
+  const totalOutstanding = customerDues.reduce((sum, cd) => sum + cd.totalDue, 0);
 
-  const totalDue = dueBills.reduce((sum, bill) => sum + (bill.balanceDue || 0), 0);
-
-  const handlePaymentClick = (bill: BillWithCustomer) => {
-    setSelectedBill(bill);
+  const handlePaymentClick = (customer: CustomerDue) => {
+    setSelectedCustomer(customer);
     setShowPaymentDialog(true);
   };
 
   const handlePaymentSubmit = () => {
-    if (!selectedBill) return;
+    if (!selectedCustomer || !selectedBillId) {
+      toast.error("Please select a bill");
+      return;
+    }
     
     const amount = parseFloat(paymentAmount);
     if (isNaN(amount) || amount <= 0) {
@@ -111,29 +130,22 @@ export default function Credit() {
       return;
     }
 
-    if (amount > (selectedBill.balanceDue || 0)) {
+    const selectedBill = selectedCustomer.bills.find(b => b.id === parseInt(selectedBillId));
+    if (!selectedBill) {
+      toast.error("Bill not found");
+      return;
+    }
+
+    if (amount > selectedBill.balanceDue) {
       toast.error("Payment amount cannot exceed balance due");
       return;
     }
 
     addPaymentMutation.mutate({
-      billId: selectedBill.id,
+      billId: parseInt(selectedBillId),
       amount,
       remarks: paymentRemarks || undefined,
     });
-  };
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "paid":
-        return <Badge className="bg-green-500">Paid</Badge>;
-      case "partially_paid":
-        return <Badge className="bg-yellow-500">Partially Paid</Badge>;
-      case "due":
-        return <Badge className="bg-red-500">Due</Badge>;
-      default:
-        return <Badge>{status}</Badge>;
-    }
   };
 
   return (
@@ -156,117 +168,64 @@ export default function Credit() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground mb-1">Total Outstanding</p>
-                <p className="text-3xl font-bold text-destructive">₹{totalDue.toFixed(2)}</p>
-                <p className="text-sm text-muted-foreground mt-1">{dueBills.length} pending bills</p>
+                <p className="text-3xl font-bold text-destructive">₹{totalOutstanding.toFixed(2)}</p>
+                <p className="text-sm text-muted-foreground mt-1">{customerDues.length} customers with pending dues</p>
               </div>
               <AlertCircle className="h-12 w-12 text-destructive" />
             </div>
           </CardContent>
         </Card>
 
-        {/* Due Bills List */}
+        {/* Customer Dues List */}
         <Card className="shadow-lg border-0">
           <CardHeader>
-            <CardTitle>Pending Payments</CardTitle>
+            <CardTitle>Customer Due Payments</CardTitle>
           </CardHeader>
           <CardContent>
             {isLoading ? (
               <p className="text-center text-muted-foreground py-8">Loading...</p>
-            ) : dueBills.length === 0 ? (
+            ) : customerDues.length === 0 ? (
               <p className="text-center text-muted-foreground py-8">No pending payments</p>
             ) : (
               <div className="space-y-4">
-                {dueBills.map((bill) => (
-                  <Card key={bill.id} className="border shadow-sm">
+                {customerDues.map((customer) => (
+                  <Card key={customer.customerId} className="border shadow-sm">
                     <CardContent className="pt-6">
                       <div className="space-y-3">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <p className="font-semibold">{bill.billNumber}</p>
-                            <p className="text-sm text-muted-foreground">
-                              {format(new Date(bill.date), "dd MMM yyyy")}
+                        <div className="flex items-start gap-3">
+                          <div className="p-2 bg-primary/10 rounded-full">
+                            <User className="h-5 w-5 text-primary" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="font-semibold text-lg">{customer.customerName}</p>
+                            {customer.customerPhone && (
+                              <p className="text-sm text-muted-foreground">{customer.customerPhone}</p>
+                            )}
+                            <p className="text-sm text-muted-foreground mt-1">
+                              {customer.pendingBillsCount} pending {customer.pendingBillsCount === 1 ? 'bill' : 'bills'}
                             </p>
                           </div>
-                          {getStatusBadge(bill.status)}
                         </div>
 
-                        {bill.customerName && (
-                          <div className="text-sm">
-                            <p className="font-medium">Customer: {bill.customerName}</p>
-                            {bill.customerPhone && (
-                              <p className="text-muted-foreground">{bill.customerPhone}</p>
-                            )}
-                          </div>
-                        )}
-
-                        <div className="grid grid-cols-3 gap-2 text-sm">
-                          <div>
-                            <p className="text-muted-foreground">Total</p>
-                            <p className="font-semibold">₹{bill.totalAmount}</p>
-                          </div>
-                          <div>
-                            <p className="text-muted-foreground">Paid</p>
-                            <p className="font-semibold text-green-600">₹{bill.amountPaid}</p>
-                          </div>
-                          <div>
-                            <p className="text-muted-foreground">Balance</p>
-                            <p className="font-semibold text-red-600">₹{bill.balanceDue}</p>
+                        <div className="border-t pt-3">
+                          <div className="flex justify-between items-center">
+                            <div>
+                              <p className="text-sm text-muted-foreground">Total Due</p>
+                              <p className="text-2xl font-bold text-red-600">₹{customer.totalDue.toFixed(2)}</p>
+                            </div>
+                            <Button
+                              onClick={() => handlePaymentClick(customer)}
+                              size="sm"
+                            >
+                              <DollarSign className="w-4 h-4 mr-2" />
+                              Receive Payment
+                            </Button>
                           </div>
                         </div>
-
-                        <Button
-                          onClick={() => handlePaymentClick(bill)}
-                          size="sm"
-                          className="w-full"
-                        >
-                          <DollarSign className="w-4 h-4 mr-2" />
-                          Receive Payment
-                        </Button>
                       </div>
                     </CardContent>
                   </Card>
                 ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* All Bills History */}
-        <Card className="shadow-lg border-0">
-          <CardHeader>
-            <CardTitle>All Bills History</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {billsWithCustomers.length === 0 ? (
-              <p className="text-center text-muted-foreground py-8">No bills found</p>
-            ) : (
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Bill #</TableHead>
-                      <TableHead>Customer</TableHead>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Total</TableHead>
-                      <TableHead>Balance</TableHead>
-                      <TableHead>Status</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {billsWithCustomers.map((bill) => (
-                      <TableRow key={bill.id}>
-                        <TableCell className="font-medium">{bill.billNumber}</TableCell>
-                        <TableCell>{bill.customerName || "-"}</TableCell>
-                        <TableCell>{format(new Date(bill.date), "dd/MM/yy")}</TableCell>
-                        <TableCell>₹{bill.totalAmount}</TableCell>
-                        <TableCell className={bill.balanceDue > 0 ? "text-red-600" : "text-green-600"}>
-                          ₹{bill.balanceDue}
-                        </TableCell>
-                        <TableCell>{getStatusBadge(bill.status)}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
               </div>
             )}
           </CardContent>
@@ -279,26 +238,58 @@ export default function Credit() {
           <DialogHeader>
             <DialogTitle>Receive Payment</DialogTitle>
             <DialogDescription>
-              Record payment for {selectedBill?.billNumber}
+              Record payment for {selectedCustomer?.customerName}
             </DialogDescription>
           </DialogHeader>
           
-          {selectedBill && (
+          {selectedCustomer && (
             <div className="space-y-4">
               <div className="bg-muted p-3 rounded-md space-y-1">
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Total Amount:</span>
-                  <span className="font-semibold">₹{selectedBill.totalAmount}</span>
+                  <span className="text-muted-foreground">Customer:</span>
+                  <span className="font-semibold">{selectedCustomer.customerName}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Already Paid:</span>
-                  <span className="font-semibold text-green-600">₹{selectedBill.amountPaid}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Balance Due:</span>
-                  <span className="font-semibold text-red-600">₹{selectedBill.balanceDue}</span>
+                  <span className="text-muted-foreground">Total Outstanding:</span>
+                  <span className="font-semibold text-red-600">₹{selectedCustomer.totalDue.toFixed(2)}</span>
                 </div>
               </div>
+
+              <div className="space-y-2">
+                <Label>Select Bill *</Label>
+                <Select value={selectedBillId} onValueChange={setSelectedBillId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Choose a bill to pay" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {selectedCustomer.bills.map((bill) => (
+                      <SelectItem key={bill.id} value={bill.id.toString()}>
+                        {bill.billNumber} - ₹{bill.balanceDue.toFixed(2)} due ({format(new Date(bill.date), "dd/MM/yy")})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {selectedBillId && (() => {
+                const bill = selectedCustomer.bills.find(b => b.id === parseInt(selectedBillId));
+                return bill ? (
+                  <div className="bg-blue-50 dark:bg-blue-950/20 p-3 rounded-md space-y-1">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Bill Total:</span>
+                      <span className="font-semibold">₹{bill.totalAmount}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Already Paid:</span>
+                      <span className="font-semibold text-green-600">₹{bill.amountPaid}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Balance Due:</span>
+                      <span className="font-semibold text-red-600">₹{bill.balanceDue}</span>
+                    </div>
+                  </div>
+                ) : null;
+              })()}
 
               <div className="space-y-2">
                 <Label>Payment Amount *</Label>
@@ -308,7 +299,6 @@ export default function Credit() {
                   value={paymentAmount}
                   onChange={(e) => setPaymentAmount(e.target.value)}
                   placeholder="Enter amount"
-                  max={selectedBill.balanceDue}
                 />
               </div>
 
@@ -324,7 +314,12 @@ export default function Credit() {
           )}
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowPaymentDialog(false)}>
+            <Button variant="outline" onClick={() => {
+              setShowPaymentDialog(false);
+              setSelectedBillId("");
+              setPaymentAmount("");
+              setPaymentRemarks("");
+            }}>
               Cancel
             </Button>
             <Button onClick={handlePaymentSubmit}>
