@@ -91,7 +91,7 @@ const Pricing = () => {
     <div className="min-h-screen bg-background lg:ml-[280px]">
       <SideNav />
       {/* Header */}
-      <div className="bg-primary text-primary-foreground pl-16 pr-6 lg:px-6 py-6 rounded-b-3xl shadow-lg">
+      <div className="bg-primary text-primary-foreground pl-6 pr-16 lg:px-6 py-6 rounded-b-3xl shadow-lg">
         <h1 className="text-2xl font-bold">Pricing List</h1>
         <p className="text-primary-foreground/90 text-sm">വില പട്ടിക</p>
       </div>
