@@ -11,7 +11,9 @@ import {
   Coffee,
   AlertCircle,
   DollarSign,
-  Settings as SettingsIcon
+  Settings as SettingsIcon,
+  Receipt,
+  CreditCard
 } from "lucide-react";
 import { inventoryAPI, transactionsAPI, settingsAPI } from "@/lib/api";
 import { isLowStock } from "@/lib/utils";
@@ -193,6 +195,26 @@ const Dashboard = () => {
                 <FileText className="h-12 w-12 text-secondary mx-auto mb-3" />
                 <p className="font-semibold">Reports</p>
                 <p className="text-xs text-muted-foreground mt-1">റിപ്പോർട്ടുകൾ</p>
+              </CardContent>
+            </Card>
+          </Link>
+
+          <Link to="/billing">
+            <Card className="bg-card hover:bg-muted/50 transition-all shadow-lg border-0 cursor-pointer h-full">
+              <CardContent className="pt-6 text-center">
+                <Receipt className="h-12 w-12 text-primary mx-auto mb-3" />
+                <p className="font-semibold">Billing</p>
+                <p className="text-xs text-muted-foreground mt-1">ബില്ലിംഗ്</p>
+              </CardContent>
+            </Card>
+          </Link>
+
+          <Link to="/credit">
+            <Card className="bg-card hover:bg-muted/50 transition-all shadow-lg border-0 cursor-pointer h-full">
+              <CardContent className="pt-6 text-center">
+                <CreditCard className="h-12 w-12 text-secondary mx-auto mb-3" />
+                <p className="font-semibold">Credit Tracking</p>
+                <p className="text-xs text-muted-foreground mt-1">ക്രെഡിറ്റ് ട്രാക്കിംഗ്</p>
               </CardContent>
             </Card>
           </Link>
