@@ -280,4 +280,14 @@ router.get("/api/bills/:id/payments", async (req: Request, res: Response) => {
   }
 });
 
+router.get("/api/bills/:id/items", async (req: Request, res: Response) => {
+  try {
+    const billId = parseInt(req.params.id);
+    const items = await storage.getBillItems(billId);
+    res.json(items);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch bill items" });
+  }
+});
+
 export default router;

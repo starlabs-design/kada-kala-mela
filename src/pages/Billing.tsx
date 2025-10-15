@@ -7,7 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Download, Plus, Trash2, FileText, Receipt } from "lucide-react";
+import { Download, Plus, Trash2, FileText, Receipt, History } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -40,6 +41,7 @@ interface BillItem {
 }
 
 export default function Billing() {
+  const navigate = useNavigate();
   const [billItems, setBillItems] = useState<BillItem[]>([]);
   const [selectedItem, setSelectedItem] = useState<string>("");
   const [itemQuantity, setItemQuantity] = useState<string>("");
@@ -336,7 +338,11 @@ export default function Billing() {
       </div>
 
       <div className="px-4 -mt-4 space-y-4">
-        <div className="flex justify-end">
+        <div className="flex justify-end gap-2">
+          <Button onClick={() => navigate("/billing-history")} variant="outline" size="sm">
+            <History className="w-4 h-4 mr-2" />
+            Billing History
+          </Button>
           <Button onClick={newBill} variant="outline" size="sm">
             <FileText className="w-4 h-4 mr-2" />
             New Bill
