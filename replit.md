@@ -6,6 +6,19 @@ Kada Manager is a mobile-first inventory and expense management application desi
 
 ## Recent Changes
 
+**October 15, 2025:**
+- **Billing and Credit Tracking Module:** Comprehensive billing system with customer management and payment tracking
+  - New database tables: customers, payments, enhanced bills table with payment tracking fields
+  - Customer Management: Create and manage customers with name, phone, and notes
+  - Billing Screen: Select/add customers, add items from inventory, auto-calculate totals, track partial payments
+  - Payment Tracking: Record amount paid, calculate balance due, auto-update bill status (paid/partially_paid/due)
+  - PDF Generation: Enhanced bill PDF with customer details, itemized list, payment info, and balance due
+  - Credit Tracking Screen: View all pending bills, total outstanding amount, record payments, view payment history
+  - Dashboard Integration: Added Billing and Credit Tracking to Quick Actions
+  - API Endpoints: Full CRUD for customers, bills with payment updates, payment history
+  - Automatic inventory deduction when bills are created
+  - Mobile-optimized UI with bilingual support (English/Malayalam)
+
 **October 14, 2025:**
 - **Configurable Low Stock Alerts:** Added settings to configure different low stock limits for different unit types (kg, liters, pack, pieces, and default for others)
   - New database schema fields: lowStockLimitKg, lowStockLimitLiters, lowStockLimitPack, lowStockLimitPieces, lowStockLimitDefault
