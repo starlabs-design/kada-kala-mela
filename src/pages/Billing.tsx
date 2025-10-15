@@ -51,6 +51,7 @@ export default function Billing() {
   const [newCustomerName, setNewCustomerName] = useState("");
   const [newCustomerPhone, setNewCustomerPhone] = useState("");
   const [newCustomerNotes, setNewCustomerNotes] = useState("");
+  const [lastSavedBillNumber, setLastSavedBillNumber] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
   const { data: inventoryItems = [] } = useQuery<InventoryItem[]>({
@@ -88,6 +89,7 @@ export default function Billing() {
     onSuccess: (customer) => {
       queryClient.invalidateQueries({ queryKey: ["/api/customers"] });
       setSelectedCustomer(customer.id.toString());
+      setLastSavedBillNumber(null); // Reset saved state when new customer is added
       setShowNewCustomerDialog(false);
       setNewCustomerName("");
       setNewCustomerPhone("");
@@ -152,10 +154,12 @@ export default function Billing() {
 
     setSelectedItem("");
     setItemQuantity("");
+    setLastSavedBillNumber(null); // Reset saved state when items change
   };
 
   const removeItemFromBill = (index: number) => {
     setBillItems(billItems.filter((_, i) => i !== index));
+    setLastSavedBillNumber(null); // Reset saved state when items change
   };
 
   const subtotal = parseFloat(billItems.reduce((sum, item) => sum + item.total, 0).toFixed(2));
@@ -210,12 +214,8 @@ export default function Billing() {
       };
 
       await createBillMutation.mutateAsync(billData);
-      toast.success("Bill saved successfully");
-      
-      // Reset form after saving
-      setBillItems([]);
-      setSelectedCustomer("");
-      setAmountPaid("");
+      setLastSavedBillNumber(billNumber);
+      toast.success("Bill saved successfully! You can now download PDF.");
       
       return billNumber;
     } catch (error) {
@@ -224,36 +224,24 @@ export default function Billing() {
     }
   };
 
-  const generatePDF = async () => {
+  const generatePDF = () => {
     if (billItems.length === 0) {
       toast.error("Please add at least one item to the bill");
       return;
     }
 
+    if (!lastSavedBillNumber) {
+      toast.error("Please save the bill first before generating PDF");
+      return;
+    }
+
     try {
-      const billNumber = generateBillNumber();
-      const today = format(new Date(), "yyyy-MM-dd");
+      const billNumber = lastSavedBillNumber;
+      const customer = customers.find(c => c.id === parseInt(selectedCustomer));
       const paid = parseFloat(amountPaid || "0");
       const balance = totalAmount - paid;
-      const status = balance <= 0 ? "paid" : paid > 0 ? "partially_paid" : "due";
-
-      const billData = {
-        billNumber,
-        customerId: selectedCustomer ? parseInt(selectedCustomer) : undefined,
-        subtotal,
-        totalAmount,
-        amountPaid: paid,
-        balanceDue: balance,
-        status,
-        date: today,
-        items: billItems,
-      };
-
-      // Save bill first
-      await createBillMutation.mutateAsync(billData);
       
       const doc = new jsPDF();
-      const customer = customers.find(c => c.id === parseInt(selectedCustomer));
       
       doc.setFontSize(20);
       doc.text(settings?.shopName || "Store Name", 105, 20, { align: "center" });
@@ -303,15 +291,27 @@ export default function Billing() {
       }
       
       doc.save(`${billNumber}.pdf`);
-      toast.success("Bill saved and PDF generated successfully");
-      
-      // Reset form after PDF generation
-      setBillItems([]);
-      setSelectedCustomer("");
-      setAmountPaid("");
+      toast.success("PDF downloaded successfully");
     } catch (error) {
       console.error("PDF generation error:", error);
       toast.error("Failed to generate PDF");
+    }
+  };
+
+  const saveAndDownloadPDF = async () => {
+    try {
+      await saveBill();
+      // Small delay to ensure state is updated
+      setTimeout(() => {
+        generatePDF();
+        // Reset form after both operations
+        setBillItems([]);
+        setSelectedCustomer("");
+        setAmountPaid("");
+        setLastSavedBillNumber(null);
+      }, 100);
+    } catch (error) {
+      console.error("Error in save and download:", error);
     }
   };
 
@@ -321,6 +321,7 @@ export default function Billing() {
     setItemQuantity("");
     setSelectedCustomer("");
     setAmountPaid("");
+    setLastSavedBillNumber(null);
     toast.success("Ready for new bill");
   };
 
@@ -358,7 +359,10 @@ export default function Billing() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Select Customer (Optional)</Label>
-                <Select value={selectedCustomer} onValueChange={setSelectedCustomer}>
+                <Select value={selectedCustomer} onValueChange={(value) => {
+                  setSelectedCustomer(value);
+                  setLastSavedBillNumber(null); // Reset saved state when customer changes
+                }}>
                   <SelectTrigger>
                     <SelectValue placeholder="Choose or add customer" />
                   </SelectTrigger>
@@ -481,7 +485,10 @@ export default function Billing() {
                       type="number"
                       step="0.01"
                       value={amountPaid}
-                      onChange={(e) => setAmountPaid(e.target.value)}
+                      onChange={(e) => {
+                        setAmountPaid(e.target.value);
+                        setLastSavedBillNumber(null); // Reset saved state when payment changes
+                      }}
                       placeholder="Enter amount paid"
                     />
                   </div>
@@ -501,9 +508,13 @@ export default function Billing() {
                     <FileText className="w-4 h-4 mr-2" />
                     Save Bill
                   </Button>
-                  <Button onClick={generatePDF} size="lg">
+                  <Button onClick={generatePDF} variant="outline" size="lg" disabled={!lastSavedBillNumber}>
                     <Download className="w-4 h-4 mr-2" />
                     Download PDF
+                  </Button>
+                  <Button onClick={saveAndDownloadPDF} size="lg">
+                    <Download className="w-4 h-4 mr-2" />
+                    Save & Download PDF
                   </Button>
                 </div>
               </div>
