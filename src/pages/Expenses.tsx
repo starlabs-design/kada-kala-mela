@@ -36,7 +36,6 @@ import { Plus, TrendingUp, TrendingDown, Trash2, Pencil } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { transactionsAPI } from "@/lib/api";
 import { toast } from "sonner";
-import BottomNav from "@/components/BottomNav";
 import SideNav from "@/components/SideNav";
 import type { Transaction } from "@shared/schema";
 
@@ -187,10 +186,10 @@ const Expenses = () => {
     .reduce((sum, t) => sum + t.amount, 0);
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen bg-background lg:ml-[280px]">
       <SideNav />
       {/* Header */}
-      <div className="bg-secondary text-secondary-foreground px-6 py-6 rounded-b-3xl shadow-lg">
+      <div className="bg-secondary text-secondary-foreground pl-16 pr-6 lg:px-6 py-6 rounded-b-3xl shadow-lg">
         <h1 className="text-2xl font-bold">Income & Expenses</h1>
         <p className="text-secondary-foreground/90 text-sm">വരവ് & ചെലവ്</p>
       </div>
@@ -545,8 +544,6 @@ const Expenses = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-      <BottomNav />
     </div>
   );
 };

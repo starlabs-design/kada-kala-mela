@@ -14,7 +14,6 @@ import {
   Menu,
   X
 } from "lucide-react";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 
 const SideNav = () => {
@@ -22,7 +21,7 @@ const SideNav = () => {
   const [open, setOpen] = useState(false);
 
   const navItems = [
-    { path: "/", icon: Home, label: "Home", malayalam: "ഹോം" },
+    { path: "/", icon: Home, label: "Dashboard", malayalam: "ഹോം" },
     { path: "/inventory", icon: Package, label: "Inventory", malayalam: "സാധനങ്ങൾ" },
     { path: "/billing", icon: Receipt, label: "Billing", malayalam: "ബില്ലിംഗ്" },
     { path: "/billing-history", icon: History, label: "Billing History", malayalam: "ബില്ലിംഗ് ചരിത്രം" },
@@ -35,48 +34,67 @@ const SideNav = () => {
   ];
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          className="fixed top-4 left-4 z-50 md:hidden bg-background/80 backdrop-blur-sm shadow-md"
-        >
-          <Menu className="h-6 w-6" />
-        </Button>
-      </SheetTrigger>
-      <SheetContent side="left" className="w-[280px] sm:w-[300px]">
-        <SheetHeader>
-          <SheetTitle className="text-left">Kada Manager</SheetTitle>
-          <p className="text-sm text-muted-foreground text-left">കട മാനേജർ</p>
-        </SheetHeader>
-        <nav className="mt-6 space-y-1">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = location.pathname === item.path;
-            
-            return (
-              <Link
-                key={item.path}
-                to={item.path}
-                onClick={() => setOpen(false)}
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                  isActive
-                    ? "bg-primary text-primary-foreground"
-                    : "hover:bg-muted text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <Icon className="h-5 w-5" />
-                <div className="flex-1">
-                  <p className="font-medium">{item.label}</p>
-                  <p className="text-xs opacity-80">{item.malayalam}</p>
-                </div>
-              </Link>
-            );
-          })}
-        </nav>
-      </SheetContent>
-    </Sheet>
+    <>
+      {/* Mobile Menu Button */}
+      <Button 
+        variant="ghost" 
+        size="icon" 
+        className="fixed top-4 left-4 z-50 lg:hidden bg-background/95 backdrop-blur-sm shadow-lg border"
+        onClick={() => setOpen(!open)}
+      >
+        {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+      </Button>
+
+      {/* Overlay for mobile */}
+      {open && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside 
+        className={`fixed top-0 left-0 h-full bg-card border-r border-border z-40 transition-transform duration-300 ease-in-out lg:translate-x-0 ${
+          open ? "translate-x-0" : "-translate-x-full"
+        } w-[280px]`}
+      >
+        <div className="flex flex-col h-full">
+          {/* Header */}
+          <div className="p-6 border-b border-border">
+            <h2 className="text-2xl font-bold text-primary">Kada Manager</h2>
+            <p className="text-sm text-muted-foreground mt-1">കട മാനേജർ</p>
+          </div>
+
+          {/* Navigation Items */}
+          <nav className="flex-1 overflow-y-auto p-4 space-y-1">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = location.pathname === item.path;
+              
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  onClick={() => setOpen(false)}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+                    isActive
+                      ? "bg-primary text-primary-foreground shadow-md"
+                      : "hover:bg-muted text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <Icon className="h-5 w-5 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium truncate">{item.label}</p>
+                    <p className="text-xs opacity-80 truncate">{item.malayalam}</p>
+                  </div>
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
+      </aside>
+    </>
   );
 };
 

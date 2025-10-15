@@ -8,7 +8,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { TrendingUp, TrendingDown, Download, Share2, Calendar } from "lucide-react";
-import BottomNav from "@/components/BottomNav";
 import SideNav from "@/components/SideNav";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
@@ -117,10 +116,10 @@ const Reports = () => {
   const { growth, isPositive } = calculateGrowth();
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen bg-background lg:ml-[280px]">
       <SideNav />
       {/* Header */}
-      <div className="bg-secondary text-secondary-foreground px-6 py-6 rounded-b-3xl shadow-lg">
+      <div className="bg-secondary text-secondary-foreground pl-16 pr-6 lg:px-6 py-6 rounded-b-3xl shadow-lg">
         <h1 className="text-2xl font-bold">Reports</h1>
         <p className="text-secondary-foreground/90 text-sm">റിപ്പോർട്ടുകൾ</p>
       </div>
@@ -304,8 +303,6 @@ const Reports = () => {
           </CardContent>
         </Card>
       </div>
-
-      <BottomNav />
     </div>
   );
 };

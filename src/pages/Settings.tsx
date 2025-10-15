@@ -9,7 +9,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { settingsAPI, inventoryAPI, transactionsAPI, sellersAPI } from "@/lib/api";
 import { toast } from "sonner";
 import { useTheme } from "next-themes";
-import BottomNav from "@/components/BottomNav";
 import SideNav from "@/components/SideNav";
 
 const Settings = () => {
@@ -247,25 +246,24 @@ const Settings = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background pb-24">
+      <div className="min-h-screen bg-background lg:ml-[280px]">
         <SideNav />
-        <div className="bg-primary text-primary-foreground px-6 py-6 rounded-b-3xl shadow-lg">
+        <div className="bg-primary text-primary-foreground pl-16 pr-6 lg:px-6 py-6 rounded-b-3xl shadow-lg">
           <h1 className="text-2xl font-bold">Settings</h1>
           <p className="text-primary-foreground/90 text-sm">ക്രമീകരണങ്ങൾ</p>
         </div>
         <div className="px-4 py-6 flex items-center justify-center">
           <p className="text-muted-foreground">Loading settings...</p>
         </div>
-        <BottomNav />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen bg-background lg:ml-[280px]">
       <SideNav />
       {/* Header */}
-      <div className="bg-primary text-primary-foreground px-6 py-6 rounded-b-3xl shadow-lg">
+      <div className="bg-primary text-primary-foreground pl-16 pr-6 lg:px-6 py-6 rounded-b-3xl shadow-lg">
         <h1 className="text-2xl font-bold">Settings</h1>
         <p className="text-primary-foreground/90 text-sm">ക്രമീകരണങ്ങൾ</p>
       </div>
@@ -477,8 +475,6 @@ const Settings = () => {
           </p>
         </div>
       </div>
-
-      <BottomNav />
     </div>
   );
 };

@@ -10,7 +10,6 @@ import { Badge } from "@/components/ui/badge";
 import { CreditCard, DollarSign, AlertCircle, User } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import BottomNav from "@/components/BottomNav";
 import SideNav from "@/components/SideNav";
 
 interface Customer {
@@ -150,17 +149,12 @@ export default function Credit() {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="min-h-screen bg-background lg:ml-[280px]">
       <SideNav />
       {/* Header */}
-      <div className="bg-primary text-primary-foreground px-6 py-8 rounded-b-3xl shadow-lg">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold mb-2">Credit Tracking</h1>
-            <p className="text-primary-foreground/90 text-sm">ക്രെഡിറ്റ് ട്രാക്കിംഗ്</p>
-          </div>
-          <CreditCard className="h-10 w-10" />
-        </div>
+      <div className="bg-primary text-primary-foreground pl-16 pr-6 lg:px-6 py-8 rounded-b-3xl shadow-lg">
+        <h1 className="text-2xl font-bold mb-2">Credit Tracking</h1>
+        <p className="text-primary-foreground/90 text-sm">ക്രെഡിറ്റ് ട്രാക്കിംഗ്</p>
       </div>
 
       <div className="px-4 -mt-4 space-y-4">
@@ -330,8 +324,6 @@ export default function Credit() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      <BottomNav />
     </div>
   );
 }

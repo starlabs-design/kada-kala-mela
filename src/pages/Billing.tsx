@@ -14,7 +14,6 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { format } from "date-fns";
 import { inventoryAPI, settingsAPI, billsAPI } from "@/lib/api";
-import BottomNav from "@/components/BottomNav";
 import SideNav from "@/components/SideNav";
 
 interface InventoryItem {
@@ -327,17 +326,12 @@ export default function Billing() {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="min-h-screen bg-background lg:ml-[280px]">
       <SideNav />
       {/* Header */}
-      <div className="bg-primary text-primary-foreground px-6 py-8 rounded-b-3xl shadow-lg">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold mb-2">Billing</h1>
-            <p className="text-primary-foreground/90 text-sm">ബില്ലിംഗ്</p>
-          </div>
-          <Receipt className="h-10 w-10" />
-        </div>
+      <div className="bg-primary text-primary-foreground pl-16 pr-6 lg:px-6 py-8 rounded-b-3xl shadow-lg">
+        <h1 className="text-2xl font-bold mb-2">Billing</h1>
+        <p className="text-primary-foreground/90 text-sm">ബില്ലിംഗ്</p>
       </div>
 
       <div className="px-4 -mt-4 space-y-4">
@@ -571,8 +565,6 @@ export default function Billing() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      <BottomNav />
     </div>
   );
 }
