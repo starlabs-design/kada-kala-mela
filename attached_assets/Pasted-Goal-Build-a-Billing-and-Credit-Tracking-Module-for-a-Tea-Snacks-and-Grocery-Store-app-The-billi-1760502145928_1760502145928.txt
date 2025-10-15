@@ -1,0 +1,124 @@
+Goal:
+Build a Billing and Credit Tracking Module for a Tea, Snacks, and Grocery Store app.
+The billing screen should allow selecting or adding customers directly from a dropdown, auto-calculate bills, track partial payments, and generate PDFs.
+
+1. Customer Management
+
+Maintain a Customer Table with:
+
+customer_id (Primary Key)
+
+customer_name (Unique, Required)
+
+phone (Optional)
+
+notes (Optional)
+
+Customer name must be unique.
+
+On the Billing Screen:
+
+Show a dropdown (searchable/selectable) populated from the customer table.
+
+Allow user to type a new name → prompt “Add new customer?”
+→ if confirmed, insert new customer record.
+
+Automatically link each bill to the selected customer.
+
+2. Billing Functionality
+
+Each bill includes:
+
+bill_id (Primary Key)
+
+customer_id (Foreign Key)
+
+date_time
+
+total_amount
+
+amount_paid
+
+balance_due = total_amount - amount_paid
+
+status: Paid / Partially Paid / Due
+
+Item details per bill:
+
+Each item has:
+
+name (from inventory)
+
+quantity
+
+rate (from inventory)
+
+total = quantity × rate
+
+Quantity rules:
+
+If unit = kg → allow decimals (e.g. 0.25, 1.5, etc.)
+
+Else → allow integers only.
+
+Calculations:
+
+Auto-calculate total and subtotal as items are added.
+
+No tax or discounts needed.
+
+When saving:
+
+If amount paid = total → mark as Paid
+
+If partial → mark as Due and record remaining balance.
+
+3. Due / Credit Tracking
+
+Maintain a payments table:
+
+id, bill_id, date_time, amount, remarks
+
+Allow partial payments updates:
+
+From customer screen or bill view → “Receive Payment”
+
+Enter amount → updates amount_paid, recalculates balance_due
+
+Status auto-updates:
+
+Paid → when balance_due = 0
+
+Partially Paid → if some amount is received
+
+Due → if unpaid
+
+4. PDF Generation
+
+Generate a simple PDF bill for each transaction:
+
+Store name + date/time
+
+Customer name
+
+Item list → (Name, Qty, Rate, Total)
+
+Subtotal, Paid Amount, Balance Due
+
+Allow download or share as PDF file.
+
+5. Reports & Summary
+
+View list of all customers with dues:
+
+Columns: Name | Total | Paid | Balance | Status | Last Payment
+
+Option to view:
+
+All Bills
+
+Pending Dues
+
+Cleared Bills
+
+Export or print Due Report as PDF.
