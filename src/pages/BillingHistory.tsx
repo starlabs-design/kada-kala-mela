@@ -172,7 +172,7 @@ export default function BillingHistory() {
 
       {/* Bill Items Dialog */}
       <Dialog open={showItemsDialog} onOpenChange={setShowItemsDialog}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-[95%] sm:max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Bill Details - {selectedBill?.billNumber}</DialogTitle>
             <DialogDescription>
