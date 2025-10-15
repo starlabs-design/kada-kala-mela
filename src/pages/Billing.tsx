@@ -209,6 +209,12 @@ export default function Billing() {
 
       await createBillMutation.mutateAsync(billData);
       toast.success("Bill saved successfully");
+      
+      // Reset form after saving
+      setBillItems([]);
+      setSelectedCustomer("");
+      setAmountPaid("");
+      
       return billNumber;
     } catch (error) {
       toast.error("Failed to save bill");
@@ -217,8 +223,32 @@ export default function Billing() {
   };
 
   const generatePDF = async () => {
+    if (billItems.length === 0) {
+      toast.error("Please add at least one item to the bill");
+      return;
+    }
+
     try {
-      const billNumber = await saveBill();
+      const billNumber = generateBillNumber();
+      const today = format(new Date(), "yyyy-MM-dd");
+      const paid = parseFloat(amountPaid || "0");
+      const balance = totalAmount - paid;
+      const status = balance <= 0 ? "paid" : paid > 0 ? "partially_paid" : "due";
+
+      const billData = {
+        billNumber,
+        customerId: selectedCustomer ? parseInt(selectedCustomer) : undefined,
+        subtotal,
+        totalAmount,
+        amountPaid: paid,
+        balanceDue: balance,
+        status,
+        date: today,
+        items: billItems,
+      };
+
+      // Save bill first
+      await createBillMutation.mutateAsync(billData);
       
       const doc = new jsPDF();
       const customer = customers.find(c => c.id === parseInt(selectedCustomer));
@@ -263,21 +293,23 @@ export default function Billing() {
       doc.text(`Subtotal: ₹${subtotal}`, 20, finalY);
       doc.text(`Amount Paid: ₹${paidAmount}`, 20, finalY + 7);
       doc.setFont(undefined, 'bold');
-      doc.text(`Balance Due: ₹${balanceDue.toFixed(2)}`, 20, finalY + 14);
+      doc.text(`Balance Due: ₹${balance.toFixed(2)}`, 20, finalY + 14);
       
-      if (balanceDue <= 0) {
+      if (balance <= 0) {
         doc.setTextColor(0, 128, 0);
         doc.text("PAID IN FULL", 105, finalY + 25, { align: "center" });
       }
       
       doc.save(`${billNumber}.pdf`);
-      toast.success("PDF generated successfully");
+      toast.success("Bill saved and PDF generated successfully");
       
+      // Reset form after PDF generation
       setBillItems([]);
       setSelectedCustomer("");
       setAmountPaid("");
     } catch (error) {
       console.error("PDF generation error:", error);
+      toast.error("Failed to generate PDF");
     }
   };
 
@@ -458,10 +490,14 @@ export default function Billing() {
                   </div>
                 </div>
 
-                <div className="flex justify-end">
+                <div className="flex justify-end gap-3">
+                  <Button onClick={saveBill} variant="outline" size="lg">
+                    <FileText className="w-4 h-4 mr-2" />
+                    Save Bill
+                  </Button>
                   <Button onClick={generatePDF} size="lg">
                     <Download className="w-4 h-4 mr-2" />
-                    Save & Generate PDF
+                    Download PDF
                   </Button>
                 </div>
               </div>
