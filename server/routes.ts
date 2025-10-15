@@ -1,6 +1,6 @@
 import { Router, type Request, type Response } from "express";
 import { storage } from "./storage";
-import { insertInventoryItemSchema, insertSellerSchema, insertTransactionSchema, insertSettingsSchema, insertBillSchema, insertBillItemSchema } from "@shared/schema";
+import { insertInventoryItemSchema, insertSellerSchema, insertTransactionSchema, insertSettingsSchema, insertBillSchema, insertBillItemSchema, insertCustomerSchema, insertPaymentSchema } from "@shared/schema";
 
 const router = Router();
 
@@ -205,6 +205,78 @@ router.post("/api/bills", async (req: Request, res: Response) => {
   } catch (error) {
     console.error("Bill creation error:", error);
     res.status(400).json({ error: "Invalid data", details: error instanceof Error ? error.message : String(error) });
+  }
+});
+
+router.get("/api/customers", async (_req: Request, res: Response) => {
+  try {
+    const customers = await storage.getCustomers();
+    res.json(customers);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch customers" });
+  }
+});
+
+router.post("/api/customers", async (req: Request, res: Response) => {
+  try {
+    const data = insertCustomerSchema.parse(req.body);
+    const existing = await storage.getCustomerByName(data.name);
+    if (existing) {
+      return res.status(400).json({ error: "Customer with this name already exists" });
+    }
+    const customer = await storage.createCustomer(data);
+    res.json(customer);
+  } catch (error) {
+    res.status(400).json({ error: "Invalid data" });
+  }
+});
+
+router.get("/api/bills/customer/:customerId", async (req: Request, res: Response) => {
+  try {
+    const customerId = parseInt(req.params.customerId);
+    const bills = await storage.getBillsByCustomer(customerId);
+    res.json(bills);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch customer bills" });
+  }
+});
+
+router.post("/api/bills/:id/payment", async (req: Request, res: Response) => {
+  try {
+    const billId = parseInt(req.params.id);
+    const { amount, remarks } = req.body;
+    
+    const bill = await storage.getBill(billId);
+    if (!bill) {
+      return res.status(404).json({ error: "Bill not found" });
+    }
+    
+    const payment = await storage.createPayment({ billId, amount: parseFloat(amount), remarks });
+    
+    const newAmountPaid = (bill.amountPaid || 0) + parseFloat(amount);
+    const newBalanceDue = bill.totalAmount - newAmountPaid;
+    const newStatus = newBalanceDue <= 0 ? "paid" : newBalanceDue < bill.totalAmount ? "partially_paid" : "due";
+    
+    const updatedBill = await storage.updateBill(billId, {
+      amountPaid: newAmountPaid,
+      balanceDue: newBalanceDue,
+      status: newStatus
+    });
+    
+    res.json({ bill: updatedBill, payment });
+  } catch (error) {
+    console.error("Payment error:", error);
+    res.status(400).json({ error: "Failed to process payment" });
+  }
+});
+
+router.get("/api/bills/:id/payments", async (req: Request, res: Response) => {
+  try {
+    const billId = parseInt(req.params.id);
+    const payments = await storage.getPayments(billId);
+    res.json(payments);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch payments" });
   }
 });
 
