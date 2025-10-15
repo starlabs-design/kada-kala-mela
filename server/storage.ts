@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { inventoryItems, sellers, transactions, settings } from "@shared/schema";
+import { inventoryItems, sellers, transactions, settings, bills, billItems } from "@shared/schema";
 import type { 
   InventoryItem, 
   InsertInventoryItem, 
@@ -8,7 +8,11 @@ import type {
   Transaction, 
   InsertTransaction,
   Settings,
-  InsertSettings
+  InsertSettings,
+  Bill,
+  InsertBill,
+  BillItem,
+  InsertBillItem
 } from "@shared/schema";
 import { eq, desc } from "drizzle-orm";
 
@@ -33,6 +37,12 @@ export interface IStorage {
 
   getSettings(): Promise<Settings | undefined>;
   updateSettings(settings: Partial<InsertSettings>): Promise<Settings>;
+
+  getBills(): Promise<Bill[]>;
+  getBill(id: number): Promise<Bill | undefined>;
+  createBill(bill: InsertBill): Promise<Bill>;
+  getBillItems(billId: number): Promise<BillItem[]>;
+  createBillItem(item: InsertBillItem): Promise<BillItem>;
 }
 
 export class DbStorage implements IStorage {
@@ -121,6 +131,29 @@ export class DbStorage implements IStorage {
       return result[0];
     }
     const result = await db.insert(settings).values(data).returning();
+    return result[0];
+  }
+
+  async getBills(): Promise<Bill[]> {
+    return await db.select().from(bills).orderBy(desc(bills.createdAt));
+  }
+
+  async getBill(id: number): Promise<Bill | undefined> {
+    const result = await db.select().from(bills).where(eq(bills.id, id));
+    return result[0];
+  }
+
+  async createBill(bill: InsertBill): Promise<Bill> {
+    const result = await db.insert(bills).values(bill).returning();
+    return result[0];
+  }
+
+  async getBillItems(billId: number): Promise<BillItem[]> {
+    return await db.select().from(billItems).where(eq(billItems.billId, billId));
+  }
+
+  async createBillItem(item: InsertBillItem): Promise<BillItem> {
+    const result = await db.insert(billItems).values(item).returning();
     return result[0];
   }
 }

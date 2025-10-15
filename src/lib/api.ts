@@ -7,6 +7,10 @@ import type {
   InsertTransaction,
   Settings,
   InsertSettings,
+  Bill,
+  InsertBill,
+  BillItem,
+  InsertBillItem,
 } from "@shared/schema";
 
 const API_BASE = "";
@@ -89,6 +93,16 @@ export const settingsAPI = {
   update: (data: Partial<InsertSettings>) =>
     fetchAPI<Settings>("/api/settings", {
       method: "PATCH",
+      body: JSON.stringify(data),
+    }),
+};
+
+export const billsAPI = {
+  getAll: () => fetchAPI<Bill[]>("/api/bills"),
+  getById: (id: number) => fetchAPI<Bill & { items: BillItem[] }>(`/api/bills/${id}`),
+  create: (data: InsertBill & { items: Omit<InsertBillItem, "billId">[] }) =>
+    fetchAPI<Bill & { items: BillItem[] }>("/api/bills", {
+      method: "POST",
       body: JSON.stringify(data),
     }),
 };

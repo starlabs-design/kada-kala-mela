@@ -1,6 +1,6 @@
 import { Router, type Request, type Response } from "express";
 import { storage } from "./storage";
-import { insertInventoryItemSchema, insertSellerSchema, insertTransactionSchema, insertSettingsSchema } from "@shared/schema";
+import { insertInventoryItemSchema, insertSellerSchema, insertTransactionSchema, insertSettingsSchema, insertBillSchema, insertBillItemSchema } from "@shared/schema";
 
 const router = Router();
 
@@ -152,6 +152,59 @@ router.patch("/api/settings", async (req: Request, res: Response) => {
     res.json(settings);
   } catch (error) {
     res.status(400).json({ error: "Invalid data" });
+  }
+});
+
+router.get("/api/bills", async (_req: Request, res: Response) => {
+  try {
+    const bills = await storage.getBills();
+    res.json(bills);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch bills" });
+  }
+});
+
+router.get("/api/bills/:id", async (req: Request, res: Response) => {
+  try {
+    const id = parseInt(req.params.id);
+    const bill = await storage.getBill(id);
+    if (!bill) {
+      return res.status(404).json({ error: "Bill not found" });
+    }
+    const items = await storage.getBillItems(id);
+    res.json({ ...bill, items });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch bill" });
+  }
+});
+
+router.post("/api/bills", async (req: Request, res: Response) => {
+  try {
+    const { items, ...billData } = req.body;
+    const billDataParsed = insertBillSchema.parse(billData);
+    const bill = await storage.createBill(billDataParsed);
+    
+    if (items && Array.isArray(items)) {
+      for (const item of items) {
+        const itemData = insertBillItemSchema.parse({ ...item, billId: bill.id });
+        await storage.createBillItem(itemData);
+        
+        const inventoryItem = await storage.getInventoryItem(item.inventoryItemId);
+        if (inventoryItem) {
+          const quantityNum = parseFloat(item.quantity);
+          const newQuantity = inventoryItem.quantity - quantityNum;
+          await storage.updateInventoryItem(item.inventoryItemId, { 
+            quantity: Math.max(0, newQuantity)
+          });
+        }
+      }
+    }
+    
+    const billItems = await storage.getBillItems(bill.id);
+    res.json({ ...bill, items: billItems });
+  } catch (error) {
+    console.error("Bill creation error:", error);
+    res.status(400).json({ error: "Invalid data", details: error instanceof Error ? error.message : String(error) });
   }
 });
 

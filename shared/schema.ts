@@ -1,4 +1,4 @@
-import { pgTable, serial, varchar, integer, boolean, timestamp, text } from "drizzle-orm/pg-core";
+import { pgTable, serial, varchar, integer, boolean, timestamp, text, numeric } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -6,7 +6,7 @@ export const inventoryItems = pgTable("inventory_items", {
   id: serial("id").primaryKey(),
   name: varchar("name", { length: 255 }).notNull(),
   category: varchar("category", { length: 100 }).notNull(),
-  quantity: integer("quantity").notNull().default(0),
+  quantity: numeric("quantity", { precision: 10, scale: 2, mode: "number" }).notNull().default("0"),
   unit: varchar("unit", { length: 50 }).notNull(),
   purchasePrice: integer("purchase_price").notNull(),
   sellingPrice: integer("selling_price").notNull(),
@@ -85,3 +85,39 @@ export const insertSettingsSchema = baseSettingsSchema.omit({
 
 export type InsertSettings = z.infer<typeof insertSettingsSchema>;
 export type Settings = typeof settings.$inferSelect;
+
+export const bills = pgTable("bills", {
+  id: serial("id").primaryKey(),
+  billNumber: varchar("bill_number", { length: 50 }).notNull().unique(),
+  subtotal: numeric("subtotal", { precision: 10, scale: 2, mode: "number" }).notNull(),
+  date: varchar("date", { length: 10 }).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+const baseBillSchema = createInsertSchema(bills);
+export const insertBillSchema = baseBillSchema.omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertBill = z.infer<typeof insertBillSchema>;
+export type Bill = typeof bills.$inferSelect;
+
+export const billItems = pgTable("bill_items", {
+  id: serial("id").primaryKey(),
+  billId: integer("bill_id").references(() => bills.id, { onDelete: "cascade" }).notNull(),
+  inventoryItemId: integer("inventory_item_id").references(() => inventoryItems.id, { onDelete: "restrict" }).notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  quantity: varchar("quantity", { length: 50 }).notNull(),
+  rate: integer("rate").notNull(),
+  total: numeric("total", { precision: 10, scale: 2, mode: "number" }).notNull(),
+  unit: varchar("unit", { length: 50 }).notNull(),
+});
+
+const baseBillItemSchema = createInsertSchema(billItems);
+export const insertBillItemSchema = baseBillItemSchema.omit({
+  id: true,
+});
+
+export type InsertBillItem = z.infer<typeof insertBillItemSchema>;
+export type BillItem = typeof billItems.$inferSelect;
