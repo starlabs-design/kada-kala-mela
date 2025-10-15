@@ -7,13 +7,33 @@ Kada Manager is a mobile-first inventory and expense management application desi
 ## Recent Changes
 
 **October 15, 2025:**
-- **Billing and Credit Tracking Module:** Comprehensive billing system with customer management and payment tracking
+- **Billing and Credit Tracking Module Enhancements:**
+  - **Separate Save/PDF Workflow:** Split bill save and PDF generation into distinct operations
+    - "Save Bill" button saves bill to database and preserves form data
+    - "Download PDF" button generates PDF from saved bill (disabled until bill is saved)
+    - "Save & Download PDF" convenience button performs both operations
+    - State tracking (`lastSavedBillNumber`) ensures PDF always matches saved bill data
+    - Any bill modification (items, customer, payment) resets saved state and requires re-save before PDF
+  - **Customer-Aggregated Credit Tracking:** Completely restructured Credit page
+    - Displays total dues aggregated BY CUSTOMER instead of individual bills
+    - Shows total outstanding amount per customer with number of pending bills
+    - Expandable customer sections reveal individual bill details
+    - Payment dialog allows selecting specific bills to pay against
+  - **Billing History Page:** New dedicated page at `/billing-history`
+    - Lists all bills with customer info, dates, amounts, and status badges
+    - "View Items" button opens dialog showing itemized bill details for each bill
+    - API endpoint `/api/bills/:id/items` retrieves bill items for history view
+    - Navigation button from Billing page to Billing History for easy access
+  - **Critical Bug Fixes:**
+    - Eliminated duplicate bill creation when generating PDFs
+    - Prevented inventory double-subtraction on PDF generation
+    - Ensured PDFs always match saved bill data with comprehensive state management
+- **Initial Billing and Credit Tracking Implementation:**
   - New database tables: customers, payments, enhanced bills table with payment tracking fields
   - Customer Management: Create and manage customers with name, phone, and notes
   - Billing Screen: Select/add customers, add items from inventory, auto-calculate totals, track partial payments
   - Payment Tracking: Record amount paid, calculate balance due, auto-update bill status (paid/partially_paid/due)
   - PDF Generation: Enhanced bill PDF with customer details, itemized list, payment info, and balance due
-  - Credit Tracking Screen: View all pending bills, total outstanding amount, record payments, view payment history
   - Dashboard Integration: Added Billing and Credit Tracking to Quick Actions
   - API Endpoints: Full CRUD for customers, bills with payment updates, payment history
   - Automatic inventory deduction when bills are created
