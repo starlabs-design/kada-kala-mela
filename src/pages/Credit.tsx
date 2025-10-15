@@ -11,6 +11,7 @@ import { CreditCard, DollarSign, AlertCircle, User } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import BottomNav from "@/components/BottomNav";
+import SideNav from "@/components/SideNav";
 
 interface Customer {
   id: number;
@@ -150,6 +151,7 @@ export default function Credit() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
+      <SideNav />
       {/* Header */}
       <div className="bg-primary text-primary-foreground px-6 py-8 rounded-b-3xl shadow-lg">
         <div className="flex items-center justify-between">
@@ -168,7 +170,7 @@ export default function Credit() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground mb-1">Total Outstanding</p>
-                <p className="text-3xl font-bold text-destructive">₹{totalOutstanding.toFixed(2)}</p>
+                <p className="text-3xl font-bold text-destructive">Rs.{totalOutstanding.toFixed(2)}</p>
                 <p className="text-sm text-muted-foreground mt-1">{customerDues.length} customers with pending dues</p>
               </div>
               <AlertCircle className="h-12 w-12 text-destructive" />
@@ -211,7 +213,7 @@ export default function Credit() {
                           <div className="flex justify-between items-center">
                             <div>
                               <p className="text-sm text-muted-foreground">Total Due</p>
-                              <p className="text-2xl font-bold text-red-600">₹{customer.totalDue.toFixed(2)}</p>
+                              <p className="text-2xl font-bold text-red-600">Rs.{customer.totalDue.toFixed(2)}</p>
                             </div>
                             <Button
                               onClick={() => handlePaymentClick(customer)}
@@ -251,7 +253,7 @@ export default function Credit() {
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Total Outstanding:</span>
-                  <span className="font-semibold text-red-600">₹{selectedCustomer.totalDue.toFixed(2)}</span>
+                  <span className="font-semibold text-red-600">Rs.{selectedCustomer.totalDue.toFixed(2)}</span>
                 </div>
               </div>
 
@@ -264,7 +266,7 @@ export default function Credit() {
                   <SelectContent>
                     {selectedCustomer.bills.map((bill) => (
                       <SelectItem key={bill.id} value={bill.id.toString()}>
-                        {bill.billNumber} - ₹{bill.balanceDue.toFixed(2)} due ({format(new Date(bill.date), "dd/MM/yy")})
+                        {bill.billNumber} - Rs.{bill.balanceDue.toFixed(2)} due ({format(new Date(bill.date), "dd/MM/yy")})
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -277,15 +279,15 @@ export default function Credit() {
                   <div className="bg-blue-50 dark:bg-blue-950/20 p-3 rounded-md space-y-1">
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Bill Total:</span>
-                      <span className="font-semibold">₹{bill.totalAmount}</span>
+                      <span className="font-semibold">Rs.{bill.totalAmount}</span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Already Paid:</span>
-                      <span className="font-semibold text-green-600">₹{bill.amountPaid}</span>
+                      <span className="font-semibold text-green-600">Rs.{bill.amountPaid}</span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Balance Due:</span>
-                      <span className="font-semibold text-red-600">₹{bill.balanceDue}</span>
+                      <span className="font-semibold text-red-600">Rs.{bill.balanceDue}</span>
                     </div>
                   </div>
                 ) : null;

@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { History, Eye } from "lucide-react";
 import { format } from "date-fns";
 import BottomNav from "@/components/BottomNav";
+import SideNav from "@/components/SideNav";
 
 interface Customer {
   id: number;
@@ -19,10 +20,11 @@ interface BillItem {
   id: number;
   billId: number;
   inventoryItemId: number;
-  itemName: string;
+  name: string;
   quantity: string;
   rate: number;
   total: number;
+  unit: string;
 }
 
 interface Bill {
@@ -100,6 +102,7 @@ export default function BillingHistory() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
+      <SideNav />
       {/* Header */}
       <div className="bg-primary text-primary-foreground px-6 py-8 rounded-b-3xl shadow-lg">
         <div className="flex items-center justify-between">
@@ -148,9 +151,9 @@ export default function BillingHistory() {
                           </div>
                         </TableCell>
                         <TableCell>{format(new Date(bill.date), "dd MMM yyyy")}</TableCell>
-                        <TableCell>₹{bill.totalAmount.toFixed(2)}</TableCell>
+                        <TableCell>Rs.{bill.totalAmount.toFixed(2)}</TableCell>
                         <TableCell className={bill.balanceDue > 0 ? "text-red-600 font-semibold" : "text-green-600"}>
-                          ₹{bill.balanceDue.toFixed(2)}
+                          Rs.{bill.balanceDue.toFixed(2)}
                         </TableCell>
                         <TableCell>{getStatusBadge(bill.status)}</TableCell>
                         <TableCell className="text-right">
@@ -199,10 +202,10 @@ export default function BillingHistory() {
                   <TableBody>
                     {selectedBill.items?.map((item) => (
                       <TableRow key={item.id}>
-                        <TableCell className="font-medium">{item.itemName}</TableCell>
-                        <TableCell>{item.quantity}</TableCell>
-                        <TableCell>₹{item.rate.toFixed(2)}</TableCell>
-                        <TableCell className="text-right">₹{item.total.toFixed(2)}</TableCell>
+                        <TableCell className="font-medium">{item.name}</TableCell>
+                        <TableCell>{item.quantity} {item.unit}</TableCell>
+                        <TableCell>Rs.{item.rate.toFixed(2)}</TableCell>
+                        <TableCell className="text-right">Rs.{item.total.toFixed(2)}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -212,16 +215,16 @@ export default function BillingHistory() {
               <div className="border-t pt-4 space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Subtotal:</span>
-                  <span className="font-semibold">₹{selectedBill.totalAmount.toFixed(2)}</span>
+                  <span className="font-semibold">Rs.{selectedBill.totalAmount.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Amount Paid:</span>
-                  <span className="font-semibold text-green-600">₹{selectedBill.amountPaid.toFixed(2)}</span>
+                  <span className="font-semibold text-green-600">Rs.{selectedBill.amountPaid.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-base">
                   <span className="font-medium">Balance Due:</span>
                   <span className={`font-bold ${selectedBill.balanceDue > 0 ? 'text-red-600' : 'text-green-600'}`}>
-                    ₹{selectedBill.balanceDue.toFixed(2)}
+                    Rs.{selectedBill.balanceDue.toFixed(2)}
                   </span>
                 </div>
                 <div className="flex justify-between items-center pt-2">

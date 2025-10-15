@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/select";
 import { TrendingUp, TrendingDown, Download, Share2, Calendar } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
+import SideNav from "@/components/SideNav";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { transactionsAPI } from "@/lib/api";
@@ -117,6 +118,7 @@ const Reports = () => {
 
   return (
     <div className="min-h-screen bg-background pb-24">
+      <SideNav />
       {/* Header */}
       <div className="bg-secondary text-secondary-foreground px-6 py-6 rounded-b-3xl shadow-lg">
         <h1 className="text-2xl font-bold">Reports</h1>
@@ -214,20 +216,20 @@ const Reports = () => {
             <div className="flex justify-between items-center">
               <span className="text-muted-foreground">Total Sales</span>
               <span className="text-xl font-bold text-success">
-                ₹{(period === "week" ? weeklyData : period === "month" ? monthlyData : customMonthData).sales.toLocaleString('en-IN')}
+                Rs.{(period === "week" ? weeklyData : period === "month" ? monthlyData : customMonthData).sales.toLocaleString('en-IN')}
               </span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-muted-foreground">Total Expenses</span>
               <span className="text-xl font-bold text-destructive">
-                ₹{(period === "week" ? weeklyData : period === "month" ? monthlyData : customMonthData).expenses.toLocaleString('en-IN')}
+                Rs.{(period === "week" ? weeklyData : period === "month" ? monthlyData : customMonthData).expenses.toLocaleString('en-IN')}
               </span>
             </div>
             <div className="pt-4 border-t border-border">
               <div className="flex justify-between items-center">
                 <span className="font-semibold">Net Profit</span>
                 <span className="text-2xl font-bold text-success">
-                  ₹{(period === "week" ? weeklyData : period === "month" ? monthlyData : customMonthData).profit.toLocaleString('en-IN')}
+                  Rs.{(period === "week" ? weeklyData : period === "month" ? monthlyData : customMonthData).profit.toLocaleString('en-IN')}
                 </span>
               </div>
             </div>
@@ -245,7 +247,7 @@ const Reports = () => {
                 <div key={index}>
                   <div className="flex justify-between mb-2">
                     <span className="font-medium">{item.category}</span>
-                    <span className="font-bold">₹{item.amount.toLocaleString('en-IN')}</span>
+                    <span className="font-bold">Rs.{item.amount.toLocaleString('en-IN')}</span>
                   </div>
                   <div className="w-full bg-muted rounded-full h-3">
                     <div 

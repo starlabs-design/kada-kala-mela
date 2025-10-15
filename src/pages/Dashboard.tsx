@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { inventoryAPI, transactionsAPI, settingsAPI } from "@/lib/api";
 import { isLowStock } from "@/lib/utils";
+import SideNav from "@/components/SideNav";
 
 const Dashboard = () => {
   const { data: inventory = [] } = useQuery({
@@ -74,6 +75,7 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background pb-20">
+      <SideNav />
       {/* Header */}
       <div className="bg-primary text-primary-foreground px-6 py-8 rounded-b-3xl shadow-lg">
         <h1 className="text-2xl font-bold mb-2">Kada Manager</h1>
@@ -93,7 +95,7 @@ const Dashboard = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className={`text-3xl font-bold ${profit >= 0 ? 'text-success' : 'text-destructive'}`}>
-                  ₹{profit.toLocaleString('en-IN')}
+                  Rs.{profit.toLocaleString('en-IN')}
                 </p>
                 <p className="text-sm text-muted-foreground mt-1">
                   {profit >= 0 ? 'Profit' : 'Loss'}
@@ -116,7 +118,7 @@ const Dashboard = () => {
                 <div>
                   <p className="text-xs text-muted-foreground mb-1">Sales</p>
                   <p className="text-xl font-bold text-success">
-                    ₹{todaySales.toLocaleString('en-IN')}
+                    Rs.{todaySales.toLocaleString('en-IN')}
                   </p>
                 </div>
                 <ShoppingCart className="h-8 w-8 text-success" />
@@ -130,7 +132,7 @@ const Dashboard = () => {
                 <div>
                   <p className="text-xs text-muted-foreground mb-1">Expenses</p>
                   <p className="text-xl font-bold text-destructive">
-                    ₹{todayExpenses.toLocaleString('en-IN')}
+                    Rs.{todayExpenses.toLocaleString('en-IN')}
                   </p>
                 </div>
                 <TrendingDown className="h-8 w-8 text-destructive" />
@@ -252,7 +254,7 @@ const Dashboard = () => {
                   <div key={item.category}>
                     <div className="flex justify-between mb-2">
                       <span className="text-sm font-medium">{item.category}</span>
-                      <span className="text-sm font-bold">₹{item.amount.toLocaleString('en-IN')}</span>
+                      <span className="text-sm font-bold">Rs.{item.amount.toLocaleString('en-IN')}</span>
                     </div>
                     <div className="w-full bg-muted rounded-full h-2">
                       <div 

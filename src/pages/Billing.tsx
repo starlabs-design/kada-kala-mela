@@ -15,6 +15,7 @@ import autoTable from "jspdf-autotable";
 import { format } from "date-fns";
 import { inventoryAPI, settingsAPI, billsAPI } from "@/lib/api";
 import BottomNav from "@/components/BottomNav";
+import SideNav from "@/components/SideNav";
 
 interface InventoryItem {
   id: number;
@@ -265,8 +266,8 @@ export default function Billing() {
       const tableData = billItems.map((item) => [
         item.name,
         `${item.quantity} ${item.unit}`,
-        `₹${item.rate}`,
-        `₹${item.total}`,
+        `Rs.${item.rate}`,
+        `Rs.${item.total}`,
       ]);
       
       autoTable(doc, {
@@ -280,10 +281,10 @@ export default function Billing() {
       const finalY = (doc as any).lastAutoTable.finalY + 10;
       
       doc.setFontSize(12);
-      doc.text(`Subtotal: ₹${subtotal}`, 20, finalY);
-      doc.text(`Amount Paid: ₹${paidAmount}`, 20, finalY + 7);
+      doc.text(`Subtotal: Rs.${subtotal}`, 20, finalY);
+      doc.text(`Amount Paid: Rs.${paidAmount}`, 20, finalY + 7);
       doc.setFont(undefined, 'bold');
-      doc.text(`Balance Due: ₹${balance.toFixed(2)}`, 20, finalY + 14);
+      doc.text(`Balance Due: Rs.${balance.toFixed(2)}`, 20, finalY + 14);
       
       if (balance <= 0) {
         doc.setTextColor(0, 128, 0);
@@ -327,6 +328,7 @@ export default function Billing() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
+      <SideNav />
       {/* Header */}
       <div className="bg-primary text-primary-foreground px-6 py-8 rounded-b-3xl shadow-lg">
         <div className="flex items-center justify-between">
@@ -401,7 +403,7 @@ export default function Billing() {
                 <SelectContent>
                   {inventoryItems.map((item) => (
                     <SelectItem key={item.id} value={item.id.toString()}>
-                      {item.name} - ₹{item.sellingPrice} ({item.quantity} {item.unit} available)
+                      {item.name} - Rs.{item.sellingPrice} ({item.quantity} {item.unit} available)
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -454,8 +456,8 @@ export default function Billing() {
                     <TableRow key={index}>
                       <TableCell>{item.name}</TableCell>
                       <TableCell>{item.quantity} {item.unit}</TableCell>
-                      <TableCell>₹{item.rate}</TableCell>
-                      <TableCell>₹{item.total}</TableCell>
+                      <TableCell>Rs.{item.rate}</TableCell>
+                      <TableCell>Rs.{item.total}</TableCell>
                       <TableCell className="text-right">
                         <Button
                           variant="ghost"
@@ -474,7 +476,7 @@ export default function Billing() {
                 <div className="border-t pt-4">
                   <div className="flex justify-between text-lg">
                     <span>Total Amount:</span>
-                    <span className="font-semibold">₹{totalAmount}</span>
+                    <span className="font-semibold">Rs.{totalAmount}</span>
                   </div>
                 </div>
 
@@ -496,7 +498,7 @@ export default function Billing() {
                     <Label>Balance Due</Label>
                     <Input
                       type="text"
-                      value={`₹${balanceDue.toFixed(2)}`}
+                      value={`Rs.${balanceDue.toFixed(2)}`}
                       readOnly
                       className={balanceDue > 0 ? "text-red-600 font-semibold" : "text-green-600 font-semibold"}
                     />

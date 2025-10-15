@@ -37,6 +37,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { transactionsAPI } from "@/lib/api";
 import { toast } from "sonner";
 import BottomNav from "@/components/BottomNav";
+import SideNav from "@/components/SideNav";
 import type { Transaction } from "@shared/schema";
 
 const Expenses = () => {
@@ -187,6 +188,7 @@ const Expenses = () => {
 
   return (
     <div className="min-h-screen bg-background pb-24">
+      <SideNav />
       {/* Header */}
       <div className="bg-secondary text-secondary-foreground px-6 py-6 rounded-b-3xl shadow-lg">
         <h1 className="text-2xl font-bold">Income & Expenses</h1>
@@ -202,7 +204,7 @@ const Expenses = () => {
               <p className="text-xs font-medium text-success">Income</p>
             </div>
             <p className="text-2xl font-bold text-success">
-              ₹{totalIncome.toLocaleString('en-IN')}
+              Rs.{totalIncome.toLocaleString('en-IN')}
             </p>
           </CardContent>
         </Card>
@@ -214,7 +216,7 @@ const Expenses = () => {
               <p className="text-xs font-medium text-destructive">Expenses</p>
             </div>
             <p className="text-2xl font-bold text-destructive">
-              ₹{totalExpenses.toLocaleString('en-IN')}
+              Rs.{totalExpenses.toLocaleString('en-IN')}
             </p>
           </CardContent>
         </Card>
@@ -260,7 +262,7 @@ const Expenses = () => {
                               transaction.type === "income" ? "text-success" : "text-destructive"
                             }`}
                           >
-                            {transaction.type === "income" ? "+" : "-"}₹
+                            {transaction.type === "income" ? "+" : "-"}Rs.
                             {transaction.amount.toLocaleString('en-IN')}
                           </p>
                           <Badge
@@ -320,7 +322,7 @@ const Expenses = () => {
                         </div>
                         <div className="flex items-start gap-2 flex-shrink-0">
                           <p className="text-xl font-bold text-success">
-                            +₹{transaction.amount.toLocaleString('en-IN')}
+                            +Rs.{transaction.amount.toLocaleString('en-IN')}
                           </p>
                           <div className="flex flex-col gap-1">
                             <Button
@@ -372,7 +374,7 @@ const Expenses = () => {
                         </div>
                         <div className="flex items-start gap-2 flex-shrink-0">
                           <p className="text-xl font-bold text-destructive">
-                            -₹{transaction.amount.toLocaleString('en-IN')}
+                            -Rs.{transaction.amount.toLocaleString('en-IN')}
                           </p>
                           <div className="flex flex-col gap-1">
                             <Button
@@ -469,7 +471,7 @@ const Expenses = () => {
                   onChange={(e) =>
                     setNewTransaction({ ...newTransaction, amount: e.target.value })
                   }
-                  placeholder="₹0"
+                  placeholder="Rs.0"
                   className="rounded-xl"
                   required
                   min="1"

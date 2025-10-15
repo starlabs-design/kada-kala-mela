@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/select";
 import { Plus, Search, AlertCircle, Package, Pencil, Trash2 } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
+import SideNav from "@/components/SideNav";
 import { inventoryAPI, sellersAPI, settingsAPI } from "@/lib/api";
 import { toast } from "sonner";
 import { isLowStock } from "@/lib/utils";
@@ -163,6 +164,7 @@ const Inventory = () => {
 
   return (
     <div className="min-h-screen bg-background pb-24">
+      <SideNav />
       {/* Header */}
       <div className="bg-primary text-primary-foreground px-6 py-6 rounded-b-3xl shadow-lg">
         <h1 className="text-2xl font-bold">Inventory</h1>
